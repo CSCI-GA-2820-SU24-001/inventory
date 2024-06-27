@@ -15,16 +15,25 @@
 ######################################################################
 
 """
-Pet Store Service
+Inventory Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete Pets from the inventory of pets in the PetShop
+and Delete Inventory items.
 """
 
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import InventoryItem, DataValidationError
 from service.common import status  # HTTP Status Codes
+
+
+######################################################################
+# GET HEALTH CHECK
+######################################################################
+@app.route("/health")
+def health_check():
+    """Let them know our heart is still beating"""
+    return jsonify(status=200, message="Healthy"), status.HTTP_200_OK
 
 
 ######################################################################
@@ -32,15 +41,71 @@ from service.common import status  # HTTP Status Codes
 ######################################################################
 @app.route("/")
 def index():
-    """ Root URL response """
+    """Root URL response"""
+    app.logger.info("Request for Root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Inventory REST API Service",
+            version="1.0",
+            paths={
+                "health": url_for("health_check", _external=True),
+                "create": url_for("create_inventory_item", _external=True),
+                "list": url_for("list_inventory_items", _external=True),
+            }
+        ),
         status.HTTP_200_OK,
     )
 
 
 ######################################################################
-#  R E S T   A P I   E N D P O I N T S
+# CREATE A NEW INVENTORY ITEM
+######################################################################
+@app.route("/inventory", methods=["POST"])
+def create_inventory_item():
+    """
+    Create an Inventory Item
+    This endpoint will create an Inventory Item based on the data in the body that is posted
+    """
+    app.logger.info("Request to Create an Inventory Item...")
+    check_content_type("application/json")
+
+    item = InventoryItem()
+    # Get the data from the request and deserialize it
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    item.deserialize(data)
+
+    # Save the new Inventory Item to the database
+    item.create()
+    app.logger.info("Inventory Item with new id [%s] saved!", item.id)
+
+    # Return the location of the new Inventory Item
+    location_url = url_for("get_inventory_item", item_id=item.id, _external=True)
+    return jsonify(item.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
-# Todo: Place your REST API code here ...
+
+######################################################################
+# Checks the ContentType of a request
+######################################################################
+def check_content_type(content_type) -> None:
+    """Checks that the media type is correct"""
+    if "Content-Type" not in request.headers:
+        app.logger.error("No Content-Type specified.")
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            f"Content-Type must be {content_type}",
+        )
+
+    if request.headers["Content-Type"] == content_type:
+        return
+
+    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {content_type}",
+    )
