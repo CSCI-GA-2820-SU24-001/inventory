@@ -51,7 +51,7 @@ def index():
                 "health": url_for("health_check", _external=True),
                 "create": url_for("create_inventory_item", _external=True),
                 "list": url_for("list_inventory_items", _external=True),
-            }
+            },
         ),
         status.HTTP_200_OK,
     )
@@ -81,7 +81,34 @@ def create_inventory_item():
 
     # Return the location of the new Inventory Item
     location_url = url_for("get_inventory_item", item_id=item.id, _external=True)
-    return jsonify(item.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+    return (
+        jsonify(item.serialize()),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
+    )
+
+
+######################################################################
+# READ AN INVENTORY ITEM
+######################################################################
+
+
+@app.route("/inventory/<int:item_id>", methods=["GET"])
+def get_items(item_id):
+    """
+    Retrieve a single Item
+
+    This endpoint will return a Item based on it's id
+    """
+    app.logger.info("Request to Retrieve a item with id [%s]", item_id)
+
+    # Attempt to find the Item and abort if not found
+    item = InventoryItem.find(item_id)
+    if not item:
+        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+
+    app.logger.info("Returning item: %s", item.name)
+    return jsonify(item.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
