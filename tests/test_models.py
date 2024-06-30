@@ -49,7 +49,9 @@ class TestInventoryItemModel(TestCase):
 
     def test_create_an_inventory_item(self):
         """It should Create an Inventory Item and assert that it exists"""
-        item = InventoryItem(name="Widget", quantity=100, price=10.99, product_id=1, condition="new")
+        item = InventoryItem(
+            name="Widget", quantity=100, price=10.99, product_id=1, condition="new"
+        )
         self.assertEqual(str(item), "<InventoryItem Widget id=[None]>")
         self.assertTrue(item is not None)
         self.assertEqual(item.id, None)
@@ -58,6 +60,18 @@ class TestInventoryItemModel(TestCase):
         self.assertEqual(item.price, 10.99)
         self.assertEqual(item.product_id, 1)
         self.assertEqual(item.condition, "new")
+
+    def test_read_a_item(self):
+        """It should Read a Item"""
+        item = InventoryItemFactory()
+        logging.debug(item)
+        item.id = None
+        item.create()
+        self.assertIsNotNone(item.id)
+        # Fetch it back
+        found_item = InventoryItem.find(item.id)
+        self.assertEqual(found_item.id, item.id)
+        self.assertEqual(found_item.name, item.name)
 
     def test_update_no_id(self):
         """It should not Update an Inventory Item with no id"""
