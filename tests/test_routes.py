@@ -73,21 +73,19 @@ class TestInventoryItemService(TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
-    def test_index(self):
-        """It should call the home page"""
-        resp = self.client.get("/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        self.assertIn("name", data)
-        self.assertEqual(data["name"], "Inventory REST API Service")
+    # def test_index(self):
+    #     """It should call the home page"""
+    #     resp = self.client.get("/")
+    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    #     data = resp.get_json()
+    #     self.assertIn("name", data)
+    #     self.assertEqual(data["name"], "Inventory REST API Service")
 
     def test_create_inventory_item(self):
         """It should Create a new Inventory Item"""
         item = InventoryItemFactory()
-        logging.debug(item)
-        resp = self.client.post(
-            "/inventory", json=item.serialize(), content_type="application/json"
-        )
+        logging.debug("Test Inventory: %s", item.serialize())
+        resp = self.client.post(BASE_URL, json=item.serialize())
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         location = resp.headers.get("Location")
         self.assertIsNotNone(location)

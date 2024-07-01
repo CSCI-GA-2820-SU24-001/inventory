@@ -39,22 +39,22 @@ def health_check():
 ######################################################################
 # GET INDEX
 ######################################################################
-@app.route("/")
-def index():
-    """Root URL response"""
-    app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory REST API Service",
-            version="1.0",
-            paths={
-                "health": url_for("health_check", _external=True),
-                "create": url_for("create_inventory_item", _external=True),
-                "list": url_for("list_inventory_items", _external=True),
-            },
-        ),
-        status.HTTP_200_OK,
-    )
+# @app.route("/")
+# def index():
+#     """Root URL response"""
+#     app.logger.info("Request for Root URL")
+#     return (
+#         jsonify(
+#             name="Inventory REST API Service",
+#             version="1.0",
+#             paths={
+#                 "health": url_for("health_check", _external=True),
+#                 "create": url_for("create_inventory_item", _external=True),
+#                 "list": url_for("list_inventory_items", _external=True),
+#             },
+#         ),
+#         status.HTTP_200_OK,
+#     )
 
 
 ######################################################################
@@ -94,7 +94,7 @@ def create_inventory_item():
 
 
 @app.route("/inventory/<int:item_id>", methods=["GET"])
-def get_items(item_id):
+def get_inventory_item(item_id):
     """
     Retrieve a single Item
 

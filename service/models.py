@@ -80,6 +80,8 @@ class InventoryItem(db.Model):
         Updates a YourResourceModel to the database
         """
         logger.info("Saving %s", self.name)
+        if not self.id:
+            raise DataValidationError("Update called with empty ID field")
         try:
             db.session.commit()
         except Exception as e:
@@ -119,12 +121,51 @@ class InventoryItem(db.Model):
         """
         try:
             self.name = data["name"]
+            if not isinstance(self.name, str):
+                raise DataValidationError(
+                    "Invalid type for field 'name', expected 'str'"
+                )
+
             self.description = data.get("description")
+            if self.description is not None and not isinstance(self.description, str):
+                raise DataValidationError(
+                    "Invalid type for field 'description', expected 'str'"
+                )
+
             self.quantity = data["quantity"]
+            if not isinstance(self.quantity, int):
+                raise DataValidationError(
+                    "Invalid type for field 'quantity', expected 'int'"
+                )
+
             self.price = data["price"]
+            try:
+                self.price = float(self.price)  # Ensure price is converted to float
+            except ValueError:
+                raise DataValidationError(
+                    "Invalid value for field 'price', could not convert to float"
+                )
+
             self.product_id = data["product_id"]
+            if not isinstance(self.product_id, int):
+                raise DataValidationError(
+                    "Invalid type for field 'product_id', expected 'int'"
+                )
+
             self.restock_level = data.get("restock_level")
+            if self.restock_level is not None and not isinstance(
+                self.restock_level, int
+            ):
+                raise DataValidationError(
+                    "Invalid type for field 'restock_level', expected 'int'"
+                )
+
             self.condition = data.get("condition")
+            if self.condition is not None and not isinstance(self.condition, str):
+                raise DataValidationError(
+                    "Invalid type for field 'condition', expected 'str'"
+                )
+
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:

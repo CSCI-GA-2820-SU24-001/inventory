@@ -17,7 +17,7 @@ DATABASE_URI = os.getenv(
 ######################################################################
 #  I N V E N T O R Y   M O D E L   T E S T   C A S E S
 ######################################################################
-class TestInventoryItemModel(TestCase):
+class TestCaseBase(TestCase):
     """Test Cases for InventoryItem Model"""
 
     @classmethod
@@ -42,6 +42,13 @@ class TestInventoryItemModel(TestCase):
     def tearDown(self):
         """This runs after each test"""
         db.session.remove()
+
+
+######################################################################
+#  Inventory Item   M O D E L   T E S T   C A S E S
+######################################################################
+class TestInventoryItemModel(TestCaseBase):
+    """Inventory Item Model CRUD Tests"""
 
     ######################################################################
     #  T E S T   C A S E S
