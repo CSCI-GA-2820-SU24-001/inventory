@@ -61,7 +61,11 @@ class TestInventoryItemModel(TestCase):
         self.assertEqual(item.product_id, 1)
         self.assertEqual(item.condition, "new")
         item = InventoryItem(
-            name="Scissors", quantity=1000000, price=0.88, product_id=2, condition="used"
+            name="Scissors",
+            quantity=1000000,
+            price=0.88,
+            product_id=2,
+            condition="used",
         )
         self.assertEqual(str(item), "<InventoryItem Scissors id=[None]>")
         self.assertTrue(item is not None)
@@ -96,7 +100,6 @@ class TestInventoryItemModel(TestCase):
     #     items = InventoryItem.all()
     #     self.assertEqual(len(items), 5)
 
-
     def test_serialize_an_inventory_item(self):
         """It should serialize an Inventory Item"""
         item = InventoryItemFactory()
@@ -127,7 +130,7 @@ class TestInventoryItemModel(TestCase):
         self.assertEqual(item.price, data["price"])
         self.assertEqual(item.product_id, data["product_id"])
         self.assertEqual(item.condition, data["condition"])
-    
+
     def test_deserialize_missing_data(self):
         """It should not deserialize an Inventory Item with missing data"""
         data = {"name": "Widget", "quantity": 100}
@@ -179,4 +182,3 @@ class TestInventoryItemModel(TestCase):
         data["condition"] = "excellent"  # Invalid condition
         item = InventoryItem()
         self.assertRaises(DataValidationError, item.deserialize, data)
-
