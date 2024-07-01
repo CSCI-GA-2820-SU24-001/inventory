@@ -21,6 +21,7 @@ condition (string) - the condition of the item (new, open box, used)
 
 import os
 import logging
+from enum import Enum
 from flask_sqlalchemy import SQLAlchemy
 
 # Global variables for retry (must be int)
@@ -36,6 +37,13 @@ db = SQLAlchemy()
 
 class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
+
+
+class Condition(Enum):
+    """Enumeration of valid Inventory Item Conditions"""
+    NEW = "new"
+    OPEN_BOX = "open box"
+    USED = "used"
 
 
 class InventoryItem(db.Model):
@@ -120,11 +128,52 @@ class InventoryItem(db.Model):
         try:
             self.name = data["name"]
             self.description = data.get("description")
-            self.quantity = data["quantity"]
-            self.price = data["price"]
-            self.product_id = data["product_id"]
-            self.restock_level = data.get("restock_level")
-            self.condition = data.get("condition")
+            
+            # Check and convert quantity
+            if isinstance(data["quantity"], int):
+                self.quantity = data["quantity"]
+            else:
+                raise DataValidationError(
+                    "Invalid type for integer [quantity]: " + str(type(data["quantity"]))
+                )
+            
+            # Check and convert price
+            if isinstance(data["price"], float):
+                self.price = float(data["price"])
+            else:
+                raise DataValidationError(
+                    "Invalid type for float [price]: " + str(type(data["price"]))
+                )
+            
+            # Check product_id
+            if isinstance(data["product_id"], int):
+                self.product_id = data["product_id"]
+            else:
+                raise DataValidationError(
+                    "Invalid type for integer [product_id]: " + str(type(data["product_id"]))
+                )
+
+            # Check restock_level
+            restock_level = data.get("restock_level")
+            if restock_level is not None:
+                if isinstance(restock_level, int):
+                    self.restock_level = restock_level
+                else:
+                    raise DataValidationError(
+                        "Invalid type for integer [restock_level]: " + str(type(restock_level))
+                    )
+            
+            # Check condition
+            condition = data.get("condition")
+            if condition is not None:
+                if condition in ["new", "open box", "used"]:
+                    self.condition = condition
+                else:
+                    raise DataValidationError(
+                        "Invalid value for [condition]: " + str(condition)
+                    )
+            else:
+                self.condition = None
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
