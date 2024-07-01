@@ -85,7 +85,7 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(data["name"], "Inventory REST API Service")
 
     def test_create_inventory_item(self):
-        """It should Create a new inventory item"""
+        """It should Create a new Inventory Item"""
         test_item = InventoryItemFactory()
         logging.debug("Test Inventory Item: %s", test_item.serialize())
         response = self.client.post(BASE_URL, json=test_item.serialize())
