@@ -85,9 +85,9 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(data["name"], "Inventory REST API Service")
 
     def test_create_inventory_item(self):
-        """It should Create a new Pet"""
+        """It should Create a new inventory item"""
         test_item = InventoryItemFactory()
-        logging.debug("Test Pet: %s", test_item.serialize())
+        logging.debug("Test Inventory Item: %s", test_item.serialize())
         response = self.client.post(BASE_URL, json=test_item.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -130,7 +130,6 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(data["product_id"], test_item.product_id)
         self.assertEqual(data["restock_level"], test_item.restock_level)
         self.assertEqual(data["condition"], test_item.condition)
-
 
     # def test_get_item_not_found(self):
     #     """It should not Get a Item thats not found"""
