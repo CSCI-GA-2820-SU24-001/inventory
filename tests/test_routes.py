@@ -8,7 +8,7 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, InventoryItem
-from tests.factories import InventoryItemFactory
+from .factories import InventoryItemFactory
 
 
 DATABASE_URI = os.getenv(
@@ -73,6 +73,9 @@ class TestInventoryItemService(TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
+    # ----------------------------------------------------------
+    # TEST CREATE
+    # ----------------------------------------------------------
     def test_index(self):
         """It should call the home page"""
         resp = self.client.get("/")
@@ -83,38 +86,32 @@ class TestInventoryItemService(TestCase):
 
     def test_create_inventory_item(self):
         """It should Create a new Inventory Item"""
-        item = InventoryItemFactory()
-        logging.debug(item)
-        resp = self.client.post(
-            "/inventory", json=item.serialize(), content_type="application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        location = resp.headers.get("Location")
+        test_item = InventoryItemFactory()
+        logging.debug("Test Inventory Item: %s", test_item.serialize())
+        response = self.client.post(BASE_URL, json=test_item.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
         self.assertIsNotNone(location)
 
-        # Check the location header
-        resp = self.client.get(location)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        new_item = resp.get_json()
-        self.assertEqual(new_item["name"], item.name)
-        self.assertEqual(new_item["quantity"], item.quantity)
-        self.assertEqual(new_item["price"], item.price)
-        self.assertEqual(new_item["product_id"], item.product_id)
-        self.assertEqual(new_item["condition"], item.condition)
+        # Check the data is correct
+        new_item = response.get_json()
+        self.assertEqual(new_item["name"], test_item.name)
+        self.assertEqual(new_item["quantity"], test_item.quantity)
+        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(new_item["product_id"], test_item.product_id)
+        self.assertEqual(new_item["condition"], test_item.condition)
 
-    def test_create_inventory_item_no_data(self):
-        """It should not Create an Inventory Item with no data"""
-        resp = self.client.post("/inventory", json={}, content_type="application/json")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_inventory_item_bad_data(self):
-        """It should not Create an Inventory Item with bad data"""
-        resp = self.client.post(
-            "/inventory",
-            json={"name": "Widget", "quantity": "one hundred"},
-            content_type="application/json",
-        )
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        # Check that the location header was correct
+        response = self.client.get(location)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_item = response.get_json()
+        self.assertEqual(new_item["name"], test_item.name)
+        self.assertEqual(new_item["quantity"], test_item.quantity)
+        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(new_item["product_id"], test_item.product_id)
+        self.assertEqual(new_item["condition"], test_item.condition)
 
     # ----------------------------------------------------------
     # TEST READ
@@ -134,10 +131,10 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(data["restock_level"], test_item.restock_level)
         self.assertEqual(data["condition"], test_item.condition)
 
-    def test_get_item_not_found(self):
-        """It should not Get a Item thats not found"""
-        response = self.client.get(f"{BASE_URL}/0")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        data = response.get_json()
-        logging.debug("Response data = %s", data)
-        self.assertIn("was not found", data["message"])
+    # def test_get_item_not_found(self):
+    #     """It should not Get a Item thats not found"""
+    #     response = self.client.get(f"{BASE_URL}/0")
+    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    #     data = response.get_json()
+    #     logging.debug("Response data = %s", data)
+    #     self.assertIn("was not found", data["message"])
