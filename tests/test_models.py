@@ -60,6 +60,21 @@ class TestInventoryItemModel(TestCase):
         self.assertEqual(item.price, 10.99)
         self.assertEqual(item.product_id, 1)
         self.assertEqual(item.condition, "new")
+        item = InventoryItem(
+            name="Scissors",
+            quantity=1000000,
+            price=0.88,
+            product_id=2,
+            condition="used",
+        )
+        self.assertEqual(str(item), "<InventoryItem Scissors id=[None]>")
+        self.assertTrue(item is not None)
+        self.assertEqual(item.id, None)
+        self.assertEqual(item.name, "Scissors")
+        self.assertEqual(item.quantity, 1000000)
+        self.assertEqual(item.price, 0.88)
+        self.assertEqual(item.product_id, 2)
+        self.assertEqual(item.condition, "used")
 
     def test_read_a_item(self):
         """It should Read a Item"""
@@ -102,6 +117,19 @@ class TestInventoryItemModel(TestCase):
         logging.debug(item)
         item.id = None
         self.assertRaises(DataValidationError, item.update)
+
+    # def test_list_all_inventory_items(self):
+    #     """It should List all Inventory Items in the database"""
+    #     items = InventoryItem.all()
+    #     self.assertEqual(items, [])
+    #     # Create 5 Inventory Items
+    #     for _ in range(5):
+    #         item = InventoryItemFactory()
+    #         item.create()
+    #     # See if we get back 5 inventory items
+    #     items = InventoryItem.all()
+    #     self.assertEqual(len(items), 5)
+
 
     def test_serialize_an_inventory_item(self):
         """It should serialize an Inventory Item"""
@@ -150,6 +178,38 @@ class TestInventoryItemModel(TestCase):
         """It should not deserialize a bad quantity attribute"""
         test_item = InventoryItemFactory()
         data = test_item.serialize()
-        data["quantity"] = "one hundred"
+        data["quantity"] = "one hundred"  # Invalid quantity
+        item = InventoryItem()
+        self.assertRaises(DataValidationError, item.deserialize, data)
+
+    def test_deserialize_bad_price(self):
+        """It should not deserialize a bad price attribute"""
+        test_item = InventoryItemFactory()
+        data = test_item.serialize()
+        data["price"] = "ten dollars"  # Invalid price
+        item = InventoryItem()
+        self.assertRaises(DataValidationError, item.deserialize, data)
+
+    def test_deserialize_bad_product_id(self):
+        """It should not deserialize a bad product_id attribute"""
+        test_item = InventoryItemFactory()
+        data = test_item.serialize()
+        data["product_id"] = "invalid_id"  # Invalid product_id
+        item = InventoryItem()
+        self.assertRaises(DataValidationError, item.deserialize, data)
+
+    def test_deserialize_bad_restock_level(self):
+        """It should not deserialize a bad restock_level attribute"""
+        test_item = InventoryItemFactory()
+        data = test_item.serialize()
+        data["restock_level"] = "fifty"  # Invalid restock_level
+        item = InventoryItem()
+        self.assertRaises(DataValidationError, item.deserialize, data)
+
+    def test_deserialize_bad_condition(self):
+        """It should not deserialize a bad condition attribute"""
+        test_item = InventoryItemFactory()
+        data = test_item.serialize()
+        data["condition"] = "excellent"  # Invalid condition
         item = InventoryItem()
         self.assertRaises(DataValidationError, item.deserialize, data)

@@ -50,11 +50,32 @@ def index():
             paths={
                 "health": url_for("health_check", _external=True),
                 "create": url_for("create_inventory_item", _external=True),
-                "list": url_for("list_inventory_items", _external=True),
+                # "list": url_for("list_inventory_items", _external=True),
             },
         ),
         status.HTTP_200_OK,
     )
+
+
+######################################################################
+# READ AN INVENTORY ITEM
+######################################################################
+@app.route("/inventory/<int:item_id>", methods=["GET"])
+def get_items(item_id):
+    """
+    Retrieve a single Item
+
+    This endpoint will return a Item based on it's id
+    """
+    app.logger.info("Request to Retrieve a item with id [%s]", item_id)
+
+    # Attempt to find the Item and abort if not found
+    item = InventoryItem.find(item_id)
+    if not item:
+        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+
+    app.logger.info("Returning item: %s", item.name)
+    return jsonify(item.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
@@ -84,27 +105,44 @@ def create_inventory_item():
     return jsonify(item.serialize()), status.HTTP_201_CREATED, {"Location": location_url}  
 
 
+
 ######################################################################
-# READ AN INVENTORY ITEM
+# LIST ALL INVENTORY ITEMS
 ######################################################################
+@app.route("/inventory_items", methods=["GET"])
+def list_inventory_items():
+    """Returns all of the Inventory Items"""
+    app.logger.info("Request for inventory item list")
 
+    items = []
 
-@app.route("/inventory/<int:item_id>", methods=["GET"])
-def get_items(item_id):
-    """
-    Retrieve a single Item
+    # Parse any arguments from the query string
+    category = request.args.get("category")
+    name = request.args.get("name")
+    available = request.args.get("available")
+    condition = request.args.get("condition")
 
-    This endpoint will return a Item based on it's id
-    """
-    app.logger.info("Request to Retrieve a item with id [%s]", item_id)
+    if category:
+        app.logger.info("Find by category: %s", category)
+        items = InventoryItem.find_by_category(category)
+    elif name:
+        app.logger.info("Find by name: %s", name)
+        items = InventoryItem.find_by_name(name)
+    elif available:
+        app.logger.info("Find by availability: %s", available)
+        # create bool from string
+        available_value = available.lower() in ["true", "yes", "1"]
+        items = InventoryItem.find_by_availability(available_value)
+    elif condition:
+        app.logger.info("Find by condition: %s", condition)
+        items = InventoryItem.find_by_condition(condition)
+    else:
+        app.logger.info("Find all")
+        items = InventoryItem.all()
 
-    # Attempt to find the Item and abort if not found
-    item = InventoryItem.find(item_id)
-    if not item:
-        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
-
-    app.logger.info("Returning item: %s", item.name)
-    return jsonify(item.serialize()), status.HTTP_200_OK
+    results = [item.serialize() for item in items]
+    app.logger.info("Returning %d inventory items", len(results))
+    return jsonify(results), status.HTTP_200_OK
 
 
 ######################################################################

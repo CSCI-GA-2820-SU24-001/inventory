@@ -8,7 +8,7 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, InventoryItem
-from tests.factories import InventoryItemFactory
+from .factories import InventoryItemFactory
 
 
 DATABASE_URI = os.getenv(
@@ -73,6 +73,9 @@ class TestInventoryItemService(TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
+    # ----------------------------------------------------------
+    # TEST CREATE
+    # ----------------------------------------------------------
     def test_index(self):
         """It should call the home page"""
         resp = self.client.get("/")
@@ -110,6 +113,7 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(new_item["product_id"], test_item.product_id)
         self.assertEqual(new_item["condition"], test_item.condition)
 
+
     def test_create_inventory_item_no_data(self):
         """It should not Create an Inventory Item with no data"""
         resp = self.client.post("/inventory", json={}, content_type="application/json")
@@ -123,6 +127,7 @@ class TestInventoryItemService(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
 
     # ----------------------------------------------------------
     # TEST READ
@@ -168,3 +173,12 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_item = response.get_json()
         self.assertEqual(updated_item["condition"], "used")
+
+    # def test_get_item_not_found(self):
+    #     """It should not Get a Item thats not found"""
+    #     response = self.client.get(f"{BASE_URL}/0")
+    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    #     data = response.get_json()
+    #     logging.debug("Response data = %s", data)
+    #     self.assertIn("was not found", data["message"])
+
