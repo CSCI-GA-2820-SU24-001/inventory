@@ -130,7 +130,6 @@ class TestInventoryItemModel(TestCase):
     #     items = InventoryItem.all()
     #     self.assertEqual(len(items), 5)
 
-
     def test_serialize_an_inventory_item(self):
         """It should serialize an Inventory Item"""
         item = InventoryItemFactory()

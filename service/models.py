@@ -83,11 +83,13 @@ class InventoryItem(db.Model):
             logger.error("Error creating record: %s", self)
             raise DataValidationError(e) from e
 
-    def update(self):
+    def update(self) -> None:
         """
         Updates a YourResourceModel to the database
         """
         logger.info("Saving %s", self.name)
+        if not self.id:
+            raise DataValidationError("Update called with empty ID field")
         try:
             db.session.commit()
         except Exception as e:
@@ -107,7 +109,9 @@ class InventoryItem(db.Model):
             raise DataValidationError(e) from e
 
     def serialize(self) -> dict:
+
         """Serializes an InventoryItem into a dictionary"""
+
         return {
             "id": self.id,
             "name": self.name,
@@ -128,7 +132,7 @@ class InventoryItem(db.Model):
         try:
             self.name = data["name"]
             self.description = data.get("description")
-            
+
             # Check and convert quantity
             if isinstance(data["quantity"], int):
                 self.quantity = data["quantity"]
@@ -136,7 +140,7 @@ class InventoryItem(db.Model):
                 raise DataValidationError(
                     "Invalid type for integer [quantity]: " + str(type(data["quantity"]))
                 )
-            
+
             # Check and convert price
             if isinstance(data["price"], float):
                 self.price = float(data["price"])
@@ -144,7 +148,7 @@ class InventoryItem(db.Model):
                 raise DataValidationError(
                     "Invalid type for float [price]: " + str(type(data["price"]))
                 )
-            
+
             # Check product_id
             if isinstance(data["product_id"], int):
                 self.product_id = data["product_id"]
@@ -162,7 +166,7 @@ class InventoryItem(db.Model):
                     raise DataValidationError(
                         "Invalid type for integer [restock_level]: " + str(type(restock_level))
                     )
-            
+
             # Check condition
             condition = data.get("condition")
             if condition is not None:

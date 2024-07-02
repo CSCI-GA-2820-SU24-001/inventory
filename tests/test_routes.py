@@ -113,7 +113,6 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(new_item["product_id"], test_item.product_id)
         self.assertEqual(new_item["condition"], test_item.condition)
 
-
     def test_create_inventory_item_no_data(self):
         """It should not Create an Inventory Item with no data"""
         resp = self.client.post("/inventory", json={}, content_type="application/json")
@@ -127,7 +126,6 @@ class TestInventoryItemService(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-
 
     # ----------------------------------------------------------
     # TEST READ
@@ -181,7 +179,6 @@ class TestInventoryItemService(TestCase):
     #     data = response.get_json()
     #     logging.debug("Response data = %s", data)
     #     self.assertIn("was not found", data["message"])
-
 
     # ----------------------------------------------------------
     # TEST Delete

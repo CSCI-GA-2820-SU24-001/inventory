@@ -107,12 +107,11 @@ def create_inventory_item():
         status.HTTP_201_CREATED,
         {"Location": location_url},
     )
-
-
-
 ######################################################################
 # LIST ALL INVENTORY ITEMS
 ######################################################################
+
+
 @app.route("/inventory_items", methods=["GET"])
 def list_inventory_items():
     """Returns all of the Inventory Items"""
@@ -177,7 +176,7 @@ def update_item(item_id):
 
     app.logger.info("Item with ID: %d updated.", item.id)
     return jsonify(item.serialize()), status.HTTP_200_OK
-  
+
 
 # DELETE AN INVENTORY ITEM
 ######################################################################
@@ -198,8 +197,6 @@ def delete_inventory(inventory_id):
 
     app.logger.info("Inventory with ID: %d delete complete.", inventory_id)
     return {}, status.HTTP_204_NO_CONTENT
-
-
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
