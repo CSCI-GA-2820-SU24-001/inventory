@@ -107,11 +107,11 @@ def create_inventory_item():
         status.HTTP_201_CREATED,
         {"Location": location_url},
     )
-
-
 ######################################################################
 # LIST ALL INVENTORY ITEMS
 ######################################################################
+
+
 @app.route("/inventory_items", methods=["GET"])
 def list_inventory_items():
     """Returns all of the Inventory Items"""
@@ -149,6 +149,35 @@ def list_inventory_items():
 
 
 ######################################################################
+# UPDATE AN EXISTING INVENTORY ITEM
+######################################################################
+@app.route("/inventory/<int:item_id>", methods=["PUT"])
+def update_item(item_id):
+    """
+    Update an item
+
+    This endpoint will update an item based the body that is posted
+    """
+    app.logger.info("Request to Update an item with id [%s]", item_id)
+    check_content_type("application/json")
+
+    # Attempt to find the item and abort if not found
+    item = InventoryItem.find(item_id)
+    if not item:
+        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+
+    # Update the Item with the new data
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    item.deserialize(data)
+
+    # Save the updates to the database
+    item.update()
+
+    app.logger.info("Item with ID: %d updated.", item.id)
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
 # DELETE AN INVENTORY ITEM
 ######################################################################
 @app.route("/inventory/<int:inventory_id>", methods=["DELETE"])
@@ -168,7 +197,6 @@ def delete_inventory(inventory_id):
 
     app.logger.info("Inventory with ID: %d delete complete.", inventory_id)
     return {}, status.HTTP_204_NO_CONTENT
-
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
