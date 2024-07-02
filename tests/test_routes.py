@@ -152,8 +152,8 @@ class TestInventoryItemService(TestCase):
         response = self.client.get(f"{BASE_URL}/{test_inventory.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_non_existing_pet(self):
-        """It should Delete a Pet even if it doesn't exist"""
+    def test_delete_non_existing_inventory(self):
+        """It should Delete an inventory even if it doesn't exist"""
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)

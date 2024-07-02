@@ -149,7 +149,7 @@ def list_inventory_items():
 
 
 ######################################################################
-# DELETE AN INVENTORY
+# DELETE AN INVENTORY ITEM
 ######################################################################
 @app.route("/inventory/<int:inventory_id>", methods=["DELETE"])
 def delete_inventory(inventory_id):
@@ -166,7 +166,7 @@ def delete_inventory(inventory_id):
         app.logger.info("Inventory with ID: %d found.", inventory.id)
         inventory.delete()
 
-    app.logger.info("Pet with ID: %d delete complete.", inventory_id)
+    app.logger.info("Inventory with ID: %d delete complete.", inventory_id)
     return {}, status.HTTP_204_NO_CONTENT
 
 

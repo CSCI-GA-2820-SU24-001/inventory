@@ -184,10 +184,10 @@ class TestInventoryItemModel(TestCase):
         self.assertRaises(DataValidationError, item.deserialize, data)
 
     def test_delete_an_inventory(self):
-        """It should Delete a Pet"""
+        """It should Delete an Inventory"""
         inventory = InventoryItemFactory()
         inventory.create()
         self.assertEqual(len(InventoryItem.all()), 1)
-        # delete the pet and make sure it isn't in the database
+        # delete the inventory and make sure it isn't in the database
         inventory.delete()
         self.assertEqual(len(InventoryItem.all()), 0)
