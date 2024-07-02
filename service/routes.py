@@ -103,7 +103,9 @@ def create_inventory_item():
     # Return the location of the new Inventory Item
     location_url = url_for("get_items", item_id=item.id, _external=True)
     return (
-        jsonify(item.serialize()), status.HTTP_201_CREATED, {"Location": location_url},
+        jsonify(item.serialize()),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
     )
 
 
@@ -144,6 +146,28 @@ def list_inventory_items():
     results = [item.serialize() for item in items]
     app.logger.info("Returning %d inventory items", len(results))
     return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
+# DELETE AN INVENTORY
+######################################################################
+@app.route("/inventory/<int:inventory_id>", methods=["DELETE"])
+def delete_inventory(inventory_id):
+    """
+    Delete an Inventory
+
+    This endpoint will delete an Inventory based the id specified in the path
+    """
+    app.logger.info("Request to Delete an inventory with id [%s]", inventory_id)
+
+    # Delete the Inventory if it exists
+    inventory = InventoryItem.find(inventory_id)
+    if inventory:
+        app.logger.info("Inventory with ID: %d found.", inventory.id)
+        inventory.delete()
+
+    app.logger.info("Pet with ID: %d delete complete.", inventory_id)
+    return {}, status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
