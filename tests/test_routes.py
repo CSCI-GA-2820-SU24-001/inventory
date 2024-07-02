@@ -83,24 +83,32 @@ class TestInventoryItemService(TestCase):
 
     def test_create_inventory_item(self):
         """It should Create a new Inventory Item"""
-        item = InventoryItemFactory()
-        logging.debug(item)
-        resp = self.client.post(
-            "/inventory", json=item.serialize(), content_type="application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        location = resp.headers.get("Location")
+        test_item = InventoryItemFactory()
+        logging.debug("Test Inventory Item: %s", test_item.serialize())
+        response = self.client.post(BASE_URL, json=test_item.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
         self.assertIsNotNone(location)
 
-        # Check the location header
-        resp = self.client.get(location)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        new_item = resp.get_json()
-        self.assertEqual(new_item["name"], item.name)
-        self.assertEqual(new_item["quantity"], item.quantity)
-        self.assertEqual(new_item["price"], item.price)
-        self.assertEqual(new_item["product_id"], item.product_id)
-        self.assertEqual(new_item["condition"], item.condition)
+        # Check the data is correct
+        new_item = response.get_json()
+        self.assertEqual(new_item["name"], test_item.name)
+        self.assertEqual(new_item["quantity"], test_item.quantity)
+        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(new_item["product_id"], test_item.product_id)
+        self.assertEqual(new_item["condition"], test_item.condition)
+
+        # Check that the location header was correct
+        response = self.client.get(location)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_item = response.get_json()
+        self.assertEqual(new_item["name"], test_item.name)
+        self.assertEqual(new_item["quantity"], test_item.quantity)
+        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(new_item["product_id"], test_item.product_id)
+        self.assertEqual(new_item["condition"], test_item.condition)
 
     def test_create_inventory_item_no_data(self):
         """It should not Create an Inventory Item with no data"""
@@ -141,3 +149,22 @@ class TestInventoryItemService(TestCase):
         data = response.get_json()
         logging.debug("Response data = %s", data)
         self.assertIn("was not found", data["message"])
+
+    # ----------------------------------------------------------
+    # TEST UPDATE
+    # ----------------------------------------------------------
+    def test_update_item(self):
+        """It should Update an existing Item"""
+        # create an item to update
+        test_item = InventoryItemFactory()
+        response = self.client.post(BASE_URL, json=test_item.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the item
+        new_item = response.get_json()
+        logging.debug(new_item)
+        new_item["condition"] = "used"
+        response = self.client.put(f"{BASE_URL}/{new_item['id']}", json=new_item)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_item = response.get_json()
+        self.assertEqual(updated_item["condition"], "used")

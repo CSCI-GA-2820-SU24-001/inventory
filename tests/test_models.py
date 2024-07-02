@@ -73,6 +73,29 @@ class TestInventoryItemModel(TestCase):
         self.assertEqual(found_item.id, item.id)
         self.assertEqual(found_item.name, item.name)
 
+    def test_update_a_item(self):
+        """It should Update an item"""
+        item = InventoryItemFactory()
+        logging.debug(item)
+        item.id = None
+        item.create()
+        logging.debug(item)
+        self.assertIsNotNone(item.id)
+        # Change it an save it
+        item.condition = "new"
+        item.price = 20
+        original_id = item.id
+        item.update()
+        self.assertEqual(item.id, original_id)
+        self.assertEqual(item.condition, "new")
+        self.assertEqual(item.price, 20)
+        # Fetch it back and make sure the id hasn't changed
+        # but the data did change
+        item = InventoryItem.all()
+        self.assertEqual(len(item), 1)
+        self.assertEqual(item[0].id, original_id)
+        self.assertEqual(item[0].condition, "new")
+
     def test_update_no_id(self):
         """It should not Update an Inventory Item with no id"""
         item = InventoryItemFactory()

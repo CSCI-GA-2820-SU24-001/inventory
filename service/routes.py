@@ -80,12 +80,8 @@ def create_inventory_item():
     app.logger.info("Inventory Item with new id [%s] saved!", item.id)
 
     # Return the location of the new Inventory Item
-    location_url = url_for("get_inventory_item", item_id=item.id, _external=True)
-    return (
-        jsonify(item.serialize()),
-        status.HTTP_201_CREATED,
-        {"Location": location_url},
-    )
+    location_url = url_for("get_items", item_id=item.id, _external=True)
+    return jsonify(item.serialize()), status.HTTP_201_CREATED, {"Location": location_url}  
 
 
 ######################################################################
@@ -108,6 +104,36 @@ def get_items(item_id):
         abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
 
     app.logger.info("Returning item: %s", item.name)
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+# UPDATE AN EXISTING INVENTORY ITEM
+######################################################################
+@app.route("/inventory/<int:item_id>", methods=["PUT"])
+def update_item(item_id):
+    """
+    Update an item
+
+    This endpoint will update an item based the body that is posted
+    """
+    app.logger.info("Request to Update an item with id [%s]", item_id)
+    check_content_type("application/json")
+
+    # Attempt to find the item and abort if not found
+    item = InventoryItem.find(item_id)
+    if not item:
+        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+
+    # Update the Item with the new data
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    item.deserialize(data)
+
+    # Save the updates to the database
+    item.update()
+
+    app.logger.info("Item with ID: %d updated.", item.id)
     return jsonify(item.serialize()), status.HTTP_200_OK
 
 
