@@ -5,6 +5,7 @@ Test cases for InventoryItem Model
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 from wsgi import app
 from service.models import InventoryItem, DataValidationError, db
 from tests.factories import InventoryItemFactory
@@ -118,17 +119,17 @@ class TestInventoryItemModel(TestCase):
         item.id = None
         self.assertRaises(DataValidationError, item.update)
 
-    # def test_list_all_inventory_items(self):
-    #     """It should List all Inventory Items in the database"""
-    #     items = InventoryItem.all()
-    #     self.assertEqual(items, [])
-    #     # Create 5 Inventory Items
-    #     for _ in range(5):
-    #         item = InventoryItemFactory()
-    #         item.create()
-    #     # See if we get back 5 inventory items
-    #     items = InventoryItem.all()
-    #     self.assertEqual(len(items), 5)
+    def test_list_all_inventory_items(self):
+        """It should List all Inventory Items in the database"""
+        items = InventoryItem.all()
+        self.assertEqual(items, [])
+        # Create 5 Inventory Items
+        for _ in range(5):
+            item = InventoryItemFactory()
+            item.create()
+        # See if we get back 5 inventory items
+        items = InventoryItem.all()
+        self.assertEqual(len(items), 5)
 
     def test_serialize_an_inventory_item(self):
         """It should serialize an Inventory Item"""
@@ -221,3 +222,94 @@ class TestInventoryItemModel(TestCase):
         # delete the inventory and make sure it isn't in the database
         inventory.delete()
         self.assertEqual(len(InventoryItem.all()), 0)
+
+
+######################################################################
+#  T E S T   E X C E P T I O N   H A N D L E R S
+######################################################################
+class TestExceptionHandlers(TestInventoryItemModel):
+    """Item Model Exception Handlers"""
+
+    @patch("service.models.db.session.commit")
+    def test_create_exception(self, exception_mock):
+        """It should catch a create exception"""
+        exception_mock.side_effect = Exception()
+        item = InventoryItemFactory()
+        self.assertRaises(DataValidationError, item.create)
+
+    @patch("service.models.db.session.commit")
+    def test_update_exception(self, exception_mock):
+        """It should catch a update exception"""
+        exception_mock.side_effect = Exception()
+        item = InventoryItemFactory()
+        self.assertRaises(DataValidationError, item.update)
+
+    @patch("service.models.db.session.commit")
+    def test_delete_exception(self, exception_mock):
+        """It should catch a delete exception"""
+        exception_mock.side_effect = Exception()
+        item = InventoryItemFactory()
+        self.assertRaises(DataValidationError, item.delete)
+
+
+######################################################################
+#  Q U E R Y   T E S T   C A S E S
+######################################################################
+class TestModelQueries(TestInventoryItemModel):
+    """Inventory Item Model Query Tests"""
+
+    def test_find_item(self):
+        """It should Find an Inventory item by ID"""
+        items = InventoryItemFactory.create_batch(5)
+        for item in items:
+            item.create()
+        logging.debug(items)
+        # make sure they got saved
+        self.assertEqual(len(InventoryItem.all()), 5)
+        # find the 2nd item in the list
+        item = InventoryItem.find(items[1].id)
+        self.assertIsNot(item, None)
+        self.assertEqual(item.id, items[1].id)
+        self.assertEqual(item.name, items[1].name)
+        self.assertEqual(item.description, items[1].description)
+        self.assertEqual(item.quantity, items[1].quantity)
+        self.assertEqual(item.price, items[1].price)
+        self.assertEqual(item.product_id, items[1].product_id)
+        self.assertEqual(item.restock_level, items[1].restock_level)
+        self.assertEqual(item.condition, items[1].condition)
+
+    def test_find_by_name(self):
+        """It should Find a InventoryItem by Name"""
+        items = InventoryItemFactory.create_batch(10)
+        for item in items:
+            item.create()
+        name = items[0].name
+        count = len([item for item in items if item.name == name])
+        found = InventoryItem.find_by_name(name)
+        self.assertEqual(found.count(), count)
+        for item in found:
+            self.assertEqual(item.name, name)
+
+    def test_find_by_condition(self):
+        """It should Find InventoryItems by Category"""
+        items = InventoryItemFactory.create_batch(10)
+        for item in items:
+            item.create()
+        condition = items[0].condition
+        count = len([item for item in items if item.condition == condition])
+        found = InventoryItem.find_by_condition(condition)
+        self.assertEqual(found.count(), count)
+        for item in found:
+            self.assertEqual(item.condition, condition)
+
+    def test_find_by_price(self):
+        """It should Find InventoryItems by price"""
+        items = InventoryItemFactory.create_batch(10)
+        for item in items:
+            item.create()
+        price = items[0].price
+        count = len([item for item in items if item.price == price])
+        found = InventoryItem.find_by_price(price)
+        self.assertEqual(found.count(), count)
+        for item in found:
+            self.assertEqual(item.price, price)

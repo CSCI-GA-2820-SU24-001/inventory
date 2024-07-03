@@ -5,6 +5,7 @@ TestInventoryItem API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from urllib.parse import quote_plus
 from wsgi import app
 from service.common import status
 from service.models import db, InventoryItem
@@ -172,14 +173,6 @@ class TestInventoryItemService(TestCase):
         updated_item = response.get_json()
         self.assertEqual(updated_item["condition"], "used")
 
-    # def test_get_item_not_found(self):
-    #     """It should not Get a Item thats not found"""
-    #     response = self.client.get(f"{BASE_URL}/0")
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    #     data = response.get_json()
-    #     logging.debug("Response data = %s", data)
-    #     self.assertIn("was not found", data["message"])
-
     # ----------------------------------------------------------
     # TEST Delete
     # ----------------------------------------------------------
@@ -198,3 +191,88 @@ class TestInventoryItemService(TestCase):
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
+
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_item_list(self):
+        """It should Get a list of InevntoryItems"""
+        self._create_items(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+
+    # ----------------------------------------------------------
+    # TEST QUERY
+    # ----------------------------------------------------------
+    def test_query_by_name(self):
+        """It should Query InventoryItems by name"""
+        items = self._create_items(5)
+        test_name = items[0].name
+        name_count = len([item for item in items if item.name == test_name])
+        response = self.client.get(
+            BASE_URL, query_string=f"name={quote_plus(test_name)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), name_count)
+        # check the data just to be sure
+        for item in data:
+            self.assertEqual(item["name"], test_name)
+
+    def test_query_by_condition(self):
+        """It should Query InventoryItems by condition"""
+        items = self._create_items(5)
+        test_condition = items[0].condition
+        condition_count = len([item for item in items if item.condition == test_condition])
+        response = self.client.get(
+            BASE_URL, query_string=f"condition={quote_plus(test_condition)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), condition_count)
+        # check the data just to be sure
+        for item in data:
+            self.assertEqual(item["condition"], test_condition)
+
+######################################################################
+#  T E S T   S A D   P A T H S
+######################################################################
+
+
+class TestSadPaths(TestCase):
+    """Test REST Exception Handling"""
+
+    def setUp(self):
+        """Runs before each test"""
+        self.client = app.test_client()
+
+    def test_method_not_allowed(self):
+        """It should not allow update without a item id"""
+        response = self.client.put(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_create_item_no_data(self):
+        """It should not Create an InventoryItem with missing data"""
+        response = self.client.post(BASE_URL, json={})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_item_no_content_type(self):
+        """It should not Create a InventoryItem with no content type"""
+        response = self.client.post(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_create_item_wrong_content_type(self):
+        """It should not Create a InventoryItem with the wrong content type"""
+        response = self.client.post(BASE_URL, data="hello", content_type="text/html")
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_create_item_bad_available(self):
+        """It should not Create a InventoryItem with bad available data"""
+        test_item = InventoryItemFactory()
+        logging.debug(test_item)
+        # change condition to a number
+        test_item.condition = 69
+        response = self.client.post(BASE_URL, json=test_item.serialize())
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

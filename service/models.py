@@ -69,7 +69,7 @@ class InventoryItem(db.Model):
     def __repr__(self):
         return f"<InventoryItem {self.name} id=[{self.id}]>"
 
-    def create(self):
+    def create(self) -> None:
         """
         Creates a YourResourceModel to the database
         """
@@ -97,7 +97,7 @@ class InventoryItem(db.Model):
             logger.error("Error updating record: %s", self)
             raise DataValidationError(e) from e
 
-    def delete(self):
+    def delete(self) -> None:
         """Removes a YourResourceModel from the data store"""
         logger.info("Deleting %s", self.name)
         try:
@@ -226,3 +226,30 @@ class InventoryItem(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_condition(cls, condition: str) -> list:
+        """Returns all of the Items in a condition
+
+        :param condition: the condition of the Items you want to match
+        :type condition: str
+
+        :return: a collection of Items in that condition
+        :rtype: list
+
+        """
+        logger.info("Processing condition query for %s ...", condition)
+        return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_price(cls, price: float):
+        """Finds an InventoryItem by its Price
+
+        :param price: the price of the InventoryItem to find
+        :type price: float
+
+        :return: an instance with the item_id, or None if not found
+        :rtype: InventoryItem
+        """
+        logger.info("Processing lookup for price %s ...", price)
+        return cls.query.filter(cls.price == price)
