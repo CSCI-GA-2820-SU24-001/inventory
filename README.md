@@ -1,31 +1,24 @@
-# NYU DevOps Project Template
+# Inventory Service Project Template
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects
-
 ## Overview
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+The Inventory Service is designed to manage the collection of inventory items for a business. This service allows users to perform CRUD (Create, Read, Update, Delete) operations on inventory items through a RESTful API. Each inventory item includes various attributes such as name, description, quantity, price, product_id, restock_level, and condition.
 
-## Automatic Setup
+This project is structured to follow best practices in software development, including unit testing and adherence to PEP8 coding standards. It utilizes Flask as the web framework, SQLAlchemy for ORM (Object Relational Mapping), and PostgreSQL as the database.
 
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
+The service is built to support seamless integration and deployment in a containerized environment using Docker, with a focus on maintainability, scalability, and ease of use.
 
-## Manual Setup
+Key features of this project include:
 
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
-
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
-
-These should be copied using a bash shell as follows:
-
-```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
-```
+- **RESTful API Endpoints:** Allows clients to interact with the inventory system.
+- **Database Integration:** Uses SQLAlchemy to manage interactions with the PostgreSQL database.
+- **Comprehensive Testing:** Includes unit tests for models and routes to ensure reliability.
+- **Logging and Error Handling:** Implements robust logging and error handling mechanisms.
+- **Configuration Management:** Utilizes environment variables to manage configuration settings.
+- **Documentation:** Provides clear documentation and instructions for setup, running, and testing the service.
 
 ## Contents
 
@@ -57,6 +50,32 @@ tests/                     - test cases package
 ├── test_models.py         - test suite for business models
 └── test_routes.py         - test suite for service routes
 ```
+
+## API Endpoints
+
+The inventory service provides the following API endpoints:
+
+| Operation                    | Method | URL                           |
+|------------------------------|--------|-------------------------------|
+| **List all inventory items** | GET    | `/inventory`                  |
+| **Create an inventory item** | POST   | `/inventory`                  |
+| **Read an inventory item**   | GET    | `/inventory/{id}`             |
+| **Update an inventory item** | PUT    | `/inventory/{id}`             |
+| **Delete an inventory item** | DELETE | `/inventory/{id}`             |
+
+## Running the Tests
+
+To run the tests for this project, you can use the following command:
+
+make test
+
+## Running the Service
+
+To run the inventory service locally, you can use the following command:
+
+flask run
+
+The service will start and be accessible at http://localhost:5000. To change the port, update the environment variable in the .flaskenv file.
 
 ## License
 
