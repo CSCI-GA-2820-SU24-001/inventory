@@ -69,12 +69,14 @@ The inventory service provides the following API endpoints:
 
 To run the tests for this project, you can use the following command:
 
+```bash
 make test
 
 ## Running the Service
 
 To run the inventory service locally, you can use the following command:
 
+```bash
 flask run
 
 The service will start and be accessible at http://localhost:5000. To change the port, update the environment variable in the .flaskenv file.
