@@ -41,6 +41,7 @@ class DataValidationError(Exception):
 
 class Condition(Enum):
     """Enumeration of valid Inventory Item Conditions"""
+
     NEW = "new"
     OPEN_BOX = "open box"
     USED = "used"
@@ -109,7 +110,6 @@ class InventoryItem(db.Model):
             raise DataValidationError(e) from e
 
     def serialize(self) -> dict:
-
         """Serializes an InventoryItem into a dictionary"""
 
         return {
@@ -132,52 +132,11 @@ class InventoryItem(db.Model):
         try:
             self.name = data["name"]
             self.description = data.get("description")
-
-            # Check and convert quantity
-            if isinstance(data["quantity"], int):
-                self.quantity = data["quantity"]
-            else:
-                raise DataValidationError(
-                    "Invalid type for integer [quantity]: " + str(type(data["quantity"]))
-                )
-
-            # Check and convert price
-            if isinstance(data["price"], float):
-                self.price = float(data["price"])
-            else:
-                raise DataValidationError(
-                    "Invalid type for float [price]: " + str(type(data["price"]))
-                )
-
-            # Check product_id
-            if isinstance(data["product_id"], int):
-                self.product_id = data["product_id"]
-            else:
-                raise DataValidationError(
-                    "Invalid type for integer [product_id]: " + str(type(data["product_id"]))
-                )
-
-            # Check restock_level
-            restock_level = data.get("restock_level")
-            if restock_level is not None:
-                if isinstance(restock_level, int):
-                    self.restock_level = restock_level
-                else:
-                    raise DataValidationError(
-                        "Invalid type for integer [restock_level]: " + str(type(restock_level))
-                    )
-
-            # Check condition
-            condition = data.get("condition")
-            if condition is not None:
-                if condition in ["new", "open box", "used"]:
-                    self.condition = condition
-                else:
-                    raise DataValidationError(
-                        "Invalid value for [condition]: " + str(condition)
-                    )
-            else:
-                self.condition = None
+            self.quantity = self._validate_quantity(data["quantity"])
+            self.price = self._validate_price(data["price"])
+            self.product_id = self._validate_product_id(data["product_id"])
+            self.restock_level = self._validate_restock_level(data.get("restock_level"))
+            self.condition = self._validate_condition(data.get("condition"))
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
@@ -190,6 +149,43 @@ class InventoryItem(db.Model):
                 + str(error)
             ) from error
         return self
+
+    def _validate_quantity(self, quantity):
+        if isinstance(quantity, int):
+            return quantity
+        raise DataValidationError(
+            "Invalid type for integer [quantity]: " + str(type(quantity))
+        )
+
+    def _validate_price(self, price):
+        if isinstance(price, float):
+            return float(price)
+        raise DataValidationError("Invalid type for float [price]: " + str(type(price)))
+
+    def _validate_product_id(self, product_id):
+        if isinstance(product_id, int):
+            return product_id
+        raise DataValidationError(
+            "Invalid type for integer [product_id]: " + str(type(product_id))
+        )
+
+    def _validate_restock_level(self, restock_level):
+        if restock_level is not None:
+            if isinstance(restock_level, int):
+                return restock_level
+            raise DataValidationError(
+                "Invalid type for integer [restock_level]: " + str(type(restock_level))
+            )
+        return None
+
+    def _validate_condition(self, condition):
+        if condition is not None:
+            if condition in ["new", "open box", "used"]:
+                return condition
+            raise DataValidationError(
+                "Invalid value for [condition]: " + str(condition)
+            )
+        return None
 
     ##################################################
     # CLASS METHODS
