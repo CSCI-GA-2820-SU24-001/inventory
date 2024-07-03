@@ -118,17 +118,17 @@ class TestInventoryItemModel(TestCase):
         item.id = None
         self.assertRaises(DataValidationError, item.update)
 
-    # def test_list_all_inventory_items(self):
-    #     """It should List all Inventory Items in the database"""
-    #     items = InventoryItem.all()
-    #     self.assertEqual(items, [])
-    #     # Create 5 Inventory Items
-    #     for _ in range(5):
-    #         item = InventoryItemFactory()
-    #         item.create()
-    #     # See if we get back 5 inventory items
-    #     items = InventoryItem.all()
-    #     self.assertEqual(len(items), 5)
+    def test_list_all_inventory_items(self):
+        """It should List all Inventory Items in the database"""
+        items = InventoryItem.all()
+        self.assertEqual(items, [])
+        # Create 5 Inventory Items
+        for _ in range(5):
+            item = InventoryItemFactory()
+            item.create()
+        # See if we get back 5 inventory items
+        items = InventoryItem.all()
+        self.assertEqual(len(items), 5)
 
     def test_serialize_an_inventory_item(self):
         """It should serialize an Inventory Item"""

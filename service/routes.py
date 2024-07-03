@@ -112,7 +112,7 @@ def create_inventory_item():
 ######################################################################
 
 
-@app.route("/inventory_items", methods=["GET"])
+@app.route("/inventory", methods=["GET"])
 def list_inventory_items():
     """Returns all of the Inventory Items"""
     app.logger.info("Request for inventory item list")
@@ -120,25 +120,20 @@ def list_inventory_items():
     items = []
 
     # Parse any arguments from the query string
-    category = request.args.get("category")
+    condition = request.args.get("condition")
     name = request.args.get("name")
-    available = request.args.get("available")
+    price = request.args.get("price")
     condition = request.args.get("condition")
 
-    if category:
-        app.logger.info("Find by category: %s", category)
-        items = InventoryItem.find_by_category(category)
+    if condition:
+        app.logger.info("Find by condition: %s", condition)
+        items = InventoryItem.find_by_condition(condition)
     elif name:
         app.logger.info("Find by name: %s", name)
         items = InventoryItem.find_by_name(name)
-    elif available:
-        app.logger.info("Find by availability: %s", available)
-        # create bool from string
-        available_value = available.lower() in ["true", "yes", "1"]
-        items = InventoryItem.find_by_availability(available_value)
-    elif condition:
-        app.logger.info("Find by condition: %s", condition)
-        items = InventoryItem.find_by_condition(condition)
+    elif price:
+        app.logger.info("Find by price: %s", price)
+        items = InventoryItem.find_by_price(price)
     else:
         app.logger.info("Find all")
         items = InventoryItem.all()

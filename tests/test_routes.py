@@ -172,14 +172,6 @@ class TestInventoryItemService(TestCase):
         updated_item = response.get_json()
         self.assertEqual(updated_item["condition"], "used")
 
-    # def test_get_item_not_found(self):
-    #     """It should not Get a Item thats not found"""
-    #     response = self.client.get(f"{BASE_URL}/0")
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    #     data = response.get_json()
-    #     logging.debug("Response data = %s", data)
-    #     self.assertIn("was not found", data["message"])
-
     # ----------------------------------------------------------
     # TEST Delete
     # ----------------------------------------------------------
@@ -198,3 +190,14 @@ class TestInventoryItemService(TestCase):
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
+
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_item_list(self):
+        """It should Get a list of Pets"""
+        self._create_items(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
