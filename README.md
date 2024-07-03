@@ -57,6 +57,8 @@ The inventory service provides the following API endpoints:
 
 | Operation                    | Method | URL                           |
 |------------------------------|--------|-------------------------------|
+| **Health check**             | GET    | `/health`                     |
+| **Root URL**                 | GET    | `/`                           |
 | **List all inventory items** | GET    | `/inventory`                  |
 | **Create an inventory item** | POST   | `/inventory`                  |
 | **Read an inventory item**   | GET    | `/inventory/{id}`             |
