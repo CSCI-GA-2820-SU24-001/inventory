@@ -69,7 +69,7 @@ class InventoryItem(db.Model):
     def __repr__(self):
         return f"<InventoryItem {self.name} id=[{self.id}]>"
 
-    def create(self):
+    def create(self) -> None:
         """
         Creates a YourResourceModel to the database
         """
@@ -97,7 +97,7 @@ class InventoryItem(db.Model):
             logger.error("Error updating record: %s", self)
             raise DataValidationError(e) from e
 
-    def delete(self):
+    def delete(self) -> None:
         """Removes a YourResourceModel from the data store"""
         logger.info("Deleting %s", self.name)
         try:
@@ -252,4 +252,4 @@ class InventoryItem(db.Model):
         :rtype: InventoryItem
         """
         logger.info("Processing lookup for price %s ...", price)
-        return cls.query.session.get(cls, price)
+        return cls.query.filter(cls.price == price)
