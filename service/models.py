@@ -208,7 +208,7 @@ class InventoryItem(db.Model):
         :rtype: InventoryItem
         """
         logger.info("Processing lookup for id %s ...", item_id)
-        return cls.query.session.get(cls, item_id)
+        return cls.query.filter(cls.id == item_id).first()
 
     @classmethod
     def find_by_name(cls, name: str) -> list:

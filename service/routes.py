@@ -122,7 +122,7 @@ def list_inventory_items():
     # Parse any arguments from the query string
     condition = request.args.get("condition")
     name = request.args.get("name")
-    price = request.args.get("price")
+    item_id = request.args.get("id")
     condition = request.args.get("condition")
 
     if condition:
@@ -131,9 +131,9 @@ def list_inventory_items():
     elif name:
         app.logger.info("Find by name: %s", name)
         items = InventoryItem.find_by_name(name)
-    elif price:
-        app.logger.info("Find by price: %s", price)
-        items = InventoryItem.find_by_price(price)
+    elif item_id:
+        app.logger.info("Find by id: %s", item_id)
+        items = InventoryItem.find(item_id)
     else:
         app.logger.info("Find all")
         items = InventoryItem.all()
