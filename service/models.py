@@ -237,15 +237,15 @@ class InventoryItem(db.Model):
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
 
-    @classmethod
-    def find_by_price(cls, price: float):
-        """Finds an InventoryItem by its Price
+    # @classmethod
+    # def find_by_price(cls, price: float):
+    #     """Finds an InventoryItem by its Price
 
-        :param price: the price of the InventoryItem to find
-        :type price: float
+    #     :param price: the price of the InventoryItem to find
+    #     :type price: float
 
-        :return: an instance with the item_id, or None if not found
-        :rtype: InventoryItem
-        """
-        logger.info("Processing lookup for price %s ...", price)
-        return cls.query.filter(cls.price == price)
+    #     :return: an instance with the item_id, or None if not found
+    #     :rtype: InventoryItem
+    #     """
+    #     logger.info("Processing lookup for price %s ...", price)
+    #     return cls.query.filter(cls.price == price)

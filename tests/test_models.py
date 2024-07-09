@@ -302,14 +302,14 @@ class TestModelQueries(TestInventoryItemModel):
         for item in found:
             self.assertEqual(item.condition, condition)
 
-    def test_find_by_price(self):
-        """It should Find InventoryItems by price"""
-        items = InventoryItemFactory.create_batch(10)
-        for item in items:
-            item.create()
-        price = items[0].price
-        count = len([item for item in items if item.price == price])
-        found = InventoryItem.find_by_price(price)
-        self.assertEqual(found.count(), count)
-        for item in found:
-            self.assertEqual(item.price, price)
+    # def test_find_by_price(self):
+    #     """It should Find InventoryItems by price"""
+    #     items = InventoryItemFactory.create_batch(10)
+    #     for item in items:
+    #         item.create()
+    #     price = items[0].price
+    #     count = len([item for item in items if item.price == price])
+    #     found = InventoryItem.find_by_price(price)
+    #     self.assertEqual(found.count(), count)
+    #     for item in found:
+    #         self.assertEqual(item.price, price)
