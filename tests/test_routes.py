@@ -236,6 +236,22 @@ class TestInventoryItemService(TestCase):
         for item in data:
             self.assertEqual(item["condition"], test_condition)
 
+    def test_query_by_id(self):
+        """It should Query InventoryItems by id"""
+        items = self._create_items(5)
+        test_id = items[0].id
+        test_id_str = str(test_id)
+        id_count = len([item for item in items if item.id == test_id_str])
+        response = self.client.get(
+            BASE_URL, query_string=f"name={quote_plus(test_id_str)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), id_count)
+        # check the data just to be sure
+        for item in data:
+            self.assertEqual(item["id"], test_id)
+
 ######################################################################
 #  T E S T   S A D   P A T H S
 ######################################################################
