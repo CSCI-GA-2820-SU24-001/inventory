@@ -3,12 +3,11 @@ TestInventoryItem API Service Test Suite
 """
 
 import os
-import logging
-from unittest import TestCase
 from urllib.parse import quote_plus
-from wsgi import app
+import logging
+from decimal import Decimal
 from service.common import status
-from service.models import db, InventoryItem
+from tests.test_base import BaseTestCase
 from .factories import InventoryItemFactory
 
 
@@ -23,33 +22,8 @@ BASE_URL = "/inventory"
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestInventoryItemService(TestCase):
+class TestInventoryItemService(BaseTestCase):
     """REST API Server Tests"""
-
-    @classmethod
-    def setUpClass(cls):
-        """Run once before all tests"""
-        app.config["TESTING"] = True
-        app.config["DEBUG"] = False
-        # Set up the test database
-        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-        app.logger.setLevel(logging.CRITICAL)
-        app.app_context().push()
-
-    @classmethod
-    def tearDownClass(cls):
-        """Run once after all tests"""
-        db.session.close()
-
-    def setUp(self):
-        """Runs before each test"""
-        self.client = app.test_client()
-        db.session.query(InventoryItem).delete()  # clean up the last tests
-        db.session.commit()
-
-    def tearDown(self):
-        """This runs after each test"""
-        db.session.remove()
 
     ############################################################
     # Utility function to bulk create items
@@ -90,6 +64,8 @@ class TestInventoryItemService(TestCase):
         test_item = InventoryItemFactory()
         logging.debug("Test Inventory Item: %s", test_item.serialize())
         response = self.client.post(BASE_URL, json=test_item.serialize())
+        if response.status_code != status.HTTP_201_CREATED:
+            logging.error("Response data: %s", response.get_json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Make sure location header is set
@@ -100,7 +76,7 @@ class TestInventoryItemService(TestCase):
         new_item = response.get_json()
         self.assertEqual(new_item["name"], test_item.name)
         self.assertEqual(new_item["quantity"], test_item.quantity)
-        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(Decimal(new_item["price"]), test_item.price)
         self.assertEqual(new_item["product_id"], test_item.product_id)
         self.assertEqual(new_item["condition"], test_item.condition)
 
@@ -110,7 +86,7 @@ class TestInventoryItemService(TestCase):
         new_item = response.get_json()
         self.assertEqual(new_item["name"], test_item.name)
         self.assertEqual(new_item["quantity"], test_item.quantity)
-        self.assertEqual(new_item["price"], test_item.price)
+        self.assertEqual(Decimal(new_item["price"]), test_item.price)
         self.assertEqual(new_item["product_id"], test_item.product_id)
         self.assertEqual(new_item["condition"], test_item.condition)
 
@@ -141,7 +117,7 @@ class TestInventoryItemService(TestCase):
         self.assertEqual(data["name"], test_item.name)
         self.assertEqual(data["description"], test_item.description)
         self.assertEqual(data["quantity"], test_item.quantity)
-        self.assertEqual(data["price"], test_item.price)
+        self.assertEqual(Decimal(data["price"]), test_item.price)
         self.assertEqual(data["product_id"], test_item.product_id)
         self.assertEqual(data["restock_level"], test_item.restock_level)
         self.assertEqual(data["condition"], test_item.condition)
@@ -225,7 +201,9 @@ class TestInventoryItemService(TestCase):
         """It should Query InventoryItems by condition"""
         items = self._create_items(5)
         test_condition = items[0].condition
-        condition_count = len([item for item in items if item.condition == test_condition])
+        condition_count = len(
+            [item for item in items if item.condition == test_condition]
+        )
         response = self.client.get(
             BASE_URL, query_string=f"condition={quote_plus(test_condition)}"
         )
@@ -252,17 +230,14 @@ class TestInventoryItemService(TestCase):
         for item in data:
             self.assertEqual(item["id"], test_id)
 
+
 ######################################################################
 #  T E S T   S A D   P A T H S
 ######################################################################
 
 
-class TestSadPaths(TestCase):
+class TestSadPaths(BaseTestCase):
     """Test REST Exception Handling"""
-
-    def setUp(self):
-        """Runs before each test"""
-        self.client = app.test_client()
 
     def test_method_not_allowed(self):
         """It should not allow update without a item id"""
