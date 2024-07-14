@@ -12,7 +12,7 @@ Attributes:
 name (string) - the name of the item
 description (string) - the description of the item
 quantity (integer) - the quantity of the item in stock
-price (float) - the price of the item
+price (Numeric) - the price of the item
 product_id (integer) - the id of the product
 restock_level (integer) - the level at which restocking is needed
 condition (string) - the condition of the item (new, open box, used)
@@ -22,7 +22,9 @@ condition (string) - the condition of the item (new, open box, used)
 import os
 import logging
 from enum import Enum
+from decimal import Decimal, InvalidOperation
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Numeric
 
 # Global variables for retry (must be int)
 RETRY_COUNT = int(os.environ.get("RETRY_COUNT", 5))
@@ -47,7 +49,7 @@ class Condition(Enum):
     USED = "used"
 
 
-class InventoryItem(db.Model):
+class InventoryItem(db.Model):  # pylint: disable=too-many-instance-attributes
     """
     Class that represents an InventoryItem
 
@@ -62,7 +64,7 @@ class InventoryItem(db.Model):
     name = db.Column(db.String(63), nullable=False)
     description = db.Column(db.String(255))
     quantity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(Numeric(8, 2), nullable=False)  # Updated to Numeric
     product_id = db.Column(db.Integer, nullable=False)
     restock_level = db.Column(db.Integer)
     condition = db.Column(db.String(15))
@@ -117,7 +119,7 @@ class InventoryItem(db.Model):
             "name": self.name,
             "description": self.description,
             "quantity": self.quantity,
-            "price": self.price,
+            "price": str(self.price.quantize(Decimal(".01"))),
             "product_id": self.product_id,
             "restock_level": self.restock_level,
             "condition": self.condition,
@@ -158,9 +160,12 @@ class InventoryItem(db.Model):
         )
 
     def _validate_price(self, price):
-        if isinstance(price, float):
-            return float(price)
-        raise DataValidationError("Invalid type for float [price]: " + str(type(price)))
+        try:
+            return Decimal(price)
+        except InvalidOperation as error:  # Catch the correct exception
+            raise DataValidationError(
+                f"Invalid type for decimal [price]: {error}"
+            ) from error
 
     def _validate_product_id(self, product_id):
         if isinstance(product_id, int):
