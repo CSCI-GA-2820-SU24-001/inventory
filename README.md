@@ -3,6 +3,9 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
+[![Build Status](https://github.com/CSCI-GA-2820-SU24-001/inventory/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-SU24-001/inventory/actions)
+[![codecov](https://codecov.io/gh/CSCI-GA-2820-SU24-001/inventory/graph/badge.svg?token=VR1EUO1UBG)](https://codecov.io/gh/CSCI-GA-2820-SU24-001/inventory)
+
 ## Overview
 
 The Inventory Service is designed to manage the collection of inventory items for a business. This service allows users to perform CRUD (Create, Read, Update, Delete) operations on inventory items through a RESTful API. Each inventory item includes various attributes such as name, description, quantity, price, product_id, restock_level, and condition.
