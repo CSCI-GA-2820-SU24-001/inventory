@@ -107,6 +107,8 @@ def create_inventory_item():
         status.HTTP_201_CREATED,
         {"Location": location_url},
     )
+
+
 ######################################################################
 # LIST ALL INVENTORY ITEMS
 ######################################################################
@@ -173,6 +175,7 @@ def update_item(item_id):
     return jsonify(item.serialize()), status.HTTP_200_OK
 
 
+######################################################################
 # DELETE AN INVENTORY ITEM
 ######################################################################
 @app.route("/inventory/<int:inventory_id>", methods=["DELETE"])
@@ -192,6 +195,50 @@ def delete_inventory(inventory_id):
 
     app.logger.info("Inventory with ID: %d delete complete.", inventory_id)
     return {}, status.HTTP_204_NO_CONTENT
+
+
+######################################################################
+# DECREMENT AN ITEM QUANTITY
+######################################################################
+@app.route("/inventory/<int:inventory_id>/decrement", methods=["PUT"])
+def decrement_an_inventory_item_quantity(inventory_id):
+    """
+    Decrement an inventory item quantity
+
+    This endpoint will decrement an Inventory item's quantity based the id specified in the path
+    """
+    app.logger.info(
+        "Request to decrement the quantity of an inventory with id [%s]", inventory_id
+    )
+    item = InventoryItem.find(inventory_id)
+
+    if not item:
+        abort(
+            status.HTTP_404_NOT_FOUND, f"Item with id '{inventory_id}' was not found."
+        )
+
+    # decrement the current quantity for this item
+    item.quantity -= 1
+    if item.quantity < 0:
+        item.quantity = 0
+
+    item.update()
+
+    if item.quantity < item.restock_level:
+        trigger_insufficient_product_notification(item)
+
+    app.logger.info("The quantity of the item with ID: %d decremented.", item.id)
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+# TRIGGER AN NOTIFICATION OF INSUFFICIENT ITEM
+######################################################################
+def trigger_insufficient_product_notification(item):
+    print(
+        f"Notification: The product '{item.name}' (ID: {item.id}) is below restock level. Current count: {item.quantity}"
+    )
+
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

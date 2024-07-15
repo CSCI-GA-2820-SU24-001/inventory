@@ -169,6 +169,44 @@ class TestInventoryItemService(BaseTestCase):
         self.assertEqual(len(response.data), 0)
 
     # ----------------------------------------------------------
+    # TEST Decrement the quantity of an inventory item
+    # ----------------------------------------------------------
+
+    def test_decrement_an_inventory_item_quantity(self):
+        """It should decrement the quantity of an inventory item"""
+        test_inventory = self._create_items(1)[0]
+        response = self.client.put(f"{BASE_URL}/{test_inventory.id}/decrement")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_inventory.name)
+        self.assertEqual(data["description"], test_inventory.description)
+        if test_inventory.quantity > 0:
+            self.assertEqual(data["quantity"], (test_inventory.quantity - 1))
+        else:
+            self.assertEqual(data["quantity"], test_inventory.quantity)
+        self.assertEqual(Decimal(data["price"]), test_inventory.price)
+        self.assertEqual(data["product_id"], test_inventory.product_id)
+        self.assertEqual(data["restock_level"], test_inventory.restock_level)
+        self.assertEqual(data["condition"], test_inventory.condition)
+
+    def test_decrement_inventory_item_count_below_zero(self):
+        """Test decrementing the inventory item count below zero"""
+        new_obj = InventoryItemFactory()
+        response = self.client.post(BASE_URL, json=new_obj.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        item = response.get_json()
+        item["quantity"] = 0
+        response = self.client.put(f"{BASE_URL}/{item['id']}", json=item)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Decrement the inventory item count
+        response = self.client.put(f"{BASE_URL}/{item['id']}/decrement")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the response data
+        data = response.get_json()
+        self.assertEqual(data["quantity"], 0)
+
+    # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
     def test_get_item_list(self):
