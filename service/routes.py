@@ -234,6 +234,10 @@ def decrement_an_inventory_item_quantity(inventory_id):
 # TRIGGER AN NOTIFICATION OF INSUFFICIENT ITEM
 ######################################################################
 def trigger_insufficient_product_notification(item):
+    """
+    This function will be called only if the current inventory item's quantity is less than
+    the restock_level
+    """
     print(
         f"Notification: The product '{item.name}' (ID: {item.id}) is below restock level. Current count: {item.quantity}"
     )
