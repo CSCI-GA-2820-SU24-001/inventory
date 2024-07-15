@@ -198,6 +198,34 @@ def delete_inventory(inventory_id):
 
 
 ######################################################################
+# ARCHIVE ITEM  (new action endpoint)
+######################################################################
+@app.route("/inventory/<int:item_id>/archive", methods=["PUT"])
+def archive_item(item_id):
+    """
+    Archive an item
+
+    This endpoint will mark an item as archived based on the id specified in the path
+    """
+    app.logger.info("Request to archive item with id [%s]", item_id)
+
+    # Find the item and abort if not found
+    item = InventoryItem.find(item_id)
+    if not item:
+        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+
+    if item.condition == "archived":
+        abort(status.HTTP_400_BAD_REQUEST, "Item is already archived.")
+
+    # Update the condition to archived
+    item.condition = "archived"
+    item.update()
+
+    app.logger.info("Item with ID: %d archived.", item.id)
+    return jsonify(item.serialize()), status.HTTP_200_OK
+
+
+######################################################################
 # DECREMENT AN ITEM QUANTITY
 ######################################################################
 @app.route("/inventory/<int:inventory_id>/decrement", methods=["PUT"])

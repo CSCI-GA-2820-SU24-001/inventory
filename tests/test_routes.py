@@ -207,6 +207,38 @@ class TestInventoryItemService(BaseTestCase):
         self.assertEqual(data["quantity"], 0)
 
     # ----------------------------------------------------------
+    # TEST ARCHIVE ITEM (new action endpoint)
+    # ----------------------------------------------------------
+    def test_archive_item(self):
+        """It should Archive an existing Item"""
+        # create an item to archive
+        test_item = self._create_items(1)[0]
+        response = self.client.put(f"{BASE_URL}/{test_item.id}/archive")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        archived_item = response.get_json()
+        self.assertEqual(archived_item["condition"], "archived")
+
+    def test_archive_item_not_found(self):
+        """It should not Archive an Item that is not found"""
+        response = self.client.put(f"{BASE_URL}/0/archive")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        self.assertIn("was not found", data["message"])
+
+    def test_archive_item_already_archived(self):
+        """It should not Archive an Item that is already archived"""
+        test_item = self._create_items(1)[0]
+        # Archive the item
+        response = self.client.put(f"{BASE_URL}/{test_item.id}/archive")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Try to archive it again
+        response = self.client.put(f"{BASE_URL}/{test_item.id}/archive")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Item is already archived", data["message"])
+
+    # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
     def test_get_item_list(self):
