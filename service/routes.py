@@ -219,8 +219,7 @@ def decrement_an_inventory_item_quantity(inventory_id):
 
     # decrement the current quantity for this item
     item.quantity -= 1
-    if item.quantity < 0:
-        item.quantity = 0
+    item.quantity = max(item.quantity, 0)
 
     item.update()
 
