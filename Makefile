@@ -46,7 +46,7 @@ test: ## Run the unit tests
 .PHONY: run
 run: ## Run the service
 	$(info Starting service...)
-	honcho start
+	honcho start -p 8081
 
 .PHONY: cluster
 cluster: ## Create a K3D Kubernetes cluster with load balancer and registry
