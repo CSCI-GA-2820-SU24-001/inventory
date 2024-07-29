@@ -30,7 +30,35 @@ spec:
           - name: RETRY_COUNT
             value: "10"
           - name: DATABASE_URI
-            value: f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: database_uri
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: password
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: database
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: host
+          - name: POSTGRES_PORT
+            valueFrom:
+              secretKeyRef:
+                name: postgres-creds
+                key: port
         resources:
           limits:
             cpu: "0.50"
