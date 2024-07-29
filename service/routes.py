@@ -41,20 +41,9 @@ def health_check():
 ######################################################################
 @app.route("/")
 def index():
-    """Root URL response"""
+    """Root URL for Inventory Service"""
     app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory REST API Service",
-            version="1.0",
-            paths={
-                "health": url_for("health_check", _external=True),
-                "create": url_for("create_inventory_item", _external=True),
-                # "list": url_for("list_inventory_items", _external=True),
-            },
-        ),
-        status.HTTP_200_OK,
-    )
+    return app.send_static_file("index.html")
 
 
 ######################################################################
