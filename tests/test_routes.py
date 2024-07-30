@@ -55,9 +55,7 @@ class TestInventoryItemService(BaseTestCase):
         """It should call the home page"""
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        self.assertIn("name", data)
-        self.assertEqual(data["name"], "Inventory REST API Service")
+        self.assertIn(b"Inventory REST API Service", resp.data)
 
     def test_create_inventory_item(self):
         """It should Create a new Inventory Item"""
