@@ -26,7 +26,7 @@ pytest-cov = "^5.0.0"
 factory-boy = "^3.3.0"
 coverage = "^7.5.3"
 httpie = "^3.2.2"
-poetry-plugin-export = "^1.7.1"
+
 
 [build-system]
 requires = ["poetry-core"]
@@ -70,3 +70,9 @@ output="./coverage.xml"
 [tool.coverage.html]
 title = "Test Coverage Report"
 directory = "coverage_html_report"
+
+# Behavior-Driven Development
+behave = "^1.2.6"
+selenium = "4.16.0" # newer versions do not work
+requests = "^2.31.0"
+compare3 = "^1.0.4"
