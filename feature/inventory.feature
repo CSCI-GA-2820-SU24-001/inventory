@@ -49,13 +49,36 @@ Feature: Inventory Management
     And I should see "5" in the "Restock Level" field
     And I should see "NEW" in the "Condition" dropdown
 
-    Scenario: Delete an inventory item
+  Scenario: Search for an Item by Name
+    When I visit the "Home Page"
+    And I set the "Name" to "laptop"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "laptop" in the "Name" field
+    And I should see "Electronics" in the "Description" field
+    And I should see "25" in the "Quantity" field
+    And I should see "1000" in the "Price" field
+    And I should see "1" in the "Product ID" field
+    And I should see "10" in the "Restock Level" field
+    And I should see "NEW" in the "Condition" dropdown
+
+  Scenario: Search for an Item by Condition
+    When I visit the "Home Page"
+    And I select "USED" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "chair" in the results
+    And I should see "marker" in the results
+    And I should not see "laptop" in the results
+    And I should not see "tablet" in the results
+
+  Scenario: Delete an inventory item
     Given the following inventories exist:
-      | id | name       | quantity | price |
-      | 34  | laptop     | 25       | 1000  |
-      | 567 | tablet     | 50       | 500   |
-      | 890 | chair      | 75       | 150   |
-      | 456 | marker     | 18       | 1     |
+      | id  | name   | quantity | price |
+      | 34  | laptop | 25       | 1000  |
+      | 567 | tablet | 50       | 500   |
+      | 890 | chair  | 75       | 150   |
+      | 456 | marker | 18       | 1     |
     When I delete the inventory item with id 567
     Then the inventory item with id 567 should not exist
     And the inventory should contain:
