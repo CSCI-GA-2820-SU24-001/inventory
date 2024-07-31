@@ -90,6 +90,28 @@ $(function () {
     // Delete a Product
     // ****************************************
 
+    $("#delete-btn").click(function () {
+
+        let product_id= $("#product_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "DELETE",
+            url: `/inventory/${product_id}`,
+            contentType: "application/json",
+            data: '',
+        })
+
+        ajax.done(function(res){
+            clear_form_data()
+            flash_message("Inventory item has been Deleted!")
+        });
+
+        ajax.fail(function(res){
+            flash_message("Server error!")
+        });
+    });
 
     // ****************************************
     // Clear the form
