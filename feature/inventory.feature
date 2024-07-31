@@ -64,20 +64,6 @@ Scenario: Delete an inventory item
       | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
       | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
 
-      Scenario: Delete an inventory item
-    Given the following inventories exist:
-      | id | name       | quantity | price |
-      | 34  | laptop     | 25       | 1000  |
-      | 567 | tablet     | 50       | 500   |
-      | 890 | chair      | 75       | 150   |
-      | 456 | marker     | 18       | 1     |
-    When I delete the inventory item with id 567
-    Then the inventory item with id 567 should not exist
-    And the inventory should contain:
-      | id  | name   | description | quantity | price | product_id | restock_level | condition |
-      | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
-      | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
-      | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
 
 Scenario: Update an inventory item
     When I visit the "Home Page"
@@ -104,3 +90,4 @@ Scenario: Update an inventory item
     Then I should see the message "Success"
     And I should see "updated tablet" in the results
     And I should not see "tablet" in the results
+
