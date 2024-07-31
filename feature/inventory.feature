@@ -49,7 +49,7 @@ Feature: Inventory Management
     And I should see "5" in the "Restock Level" field
     And I should see "NEW" in the "Condition" dropdown
 
-Scenario: Delete an inventory item
+    Scenario: Delete an inventory item
     Given the following inventories exist:
       | id | name       | quantity | price |
       | 34  | laptop     | 25       | 1000  |
