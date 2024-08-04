@@ -209,4 +209,31 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Decrement a Product's Quantity
+    // ****************************************
+
+    $("#decrement-btn").click(function () {
+
+        let product_id = $("#product_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/inventory/${product_id}/decrement`,
+            contentType: "application/json",
+            data: ''
+        });
+
+        ajax.done(function(res){
+            update_form_data(res);
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
+
 })

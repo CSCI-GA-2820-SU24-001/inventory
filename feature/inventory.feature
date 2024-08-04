@@ -89,7 +89,7 @@ Feature: Inventory Management
   
   Scenario: Read an inventory item
     When I visit the "Home Page"
-    And I set the "product_id" to 3
+    And I set the "product_id" to "890"
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "chair" in the results
@@ -98,3 +98,12 @@ Feature: Inventory Management
     And I should not see "laptop" in the results
     And I should not see "tablet" in the results
     And I should not see "marker" in the results
+
+  Scenario: Decrement an inventory item quantity
+    When I visit the "Home Page"
+    And I set the "product_id" to "34"
+    And I press the "Decrement" button
+    Then I should see the message "Success"
+    And I should see "laptop" in the results
+    And I should see "24" in the results
+    And I should not see "25" in the results
