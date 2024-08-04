@@ -89,7 +89,7 @@ Feature: Inventory Management
   
   Scenario: Read an inventory item
     When I visit the "Home Page"
-    And I set the "product_id" to "890"
+    And I set the "Product ID" to "890"
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "chair" in the results
@@ -107,3 +107,15 @@ Feature: Inventory Management
     And I should see "laptop" in the results
     And I should see "24" in the results
     And I should not see "25" in the results
+
+  Scenario: Archive an inventory item
+    When I visit the "Home Page"
+    And I set the "Product ID" to "34"
+    And I press the "Archive" button
+    Then I should see the message "Success"
+    And I should see "laptop" in the results
+    And I should see "Archived" in the results
+    And I should not see "NEW" in the results
+    When I set the "Product ID" to "34"
+    And I press the "Archive" button
+    Then I should see the message "400 Bad Request: Item is already archived" in the results
