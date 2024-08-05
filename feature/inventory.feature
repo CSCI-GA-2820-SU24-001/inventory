@@ -86,7 +86,7 @@ Feature: Inventory Management
       | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
       | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
       | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
-  
+ 
   Scenario: Read an inventory item
     When I visit the "Home Page"
     And I set the "Product ID" to "890"
@@ -119,3 +119,29 @@ Feature: Inventory Management
     When I set the "Product ID" to "34"
     And I press the "Archive" button
     Then I should see the message "400 Bad Request: Item is already archived" in the results
+    
+  Scenario: Update an inventory item
+    When I visit the "Home Page"
+    And I set the "Name" to "tablet"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "tablet" in the "Name" field
+    And I should see "Electronics" in the "Category" field
+    When I change "Name" to "updated tablet"
+    And I change "Quantity" to "45"
+    And I change "Price" to "450"
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "updated tablet" in the "Name" field
+    And I should see "45" in the "Quantity" field
+    And I should see "450" in the "Price" field
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "updated tablet" in the results
+    And I should not see "tablet" in the results
