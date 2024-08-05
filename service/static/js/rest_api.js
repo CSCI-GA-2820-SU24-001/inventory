@@ -103,18 +103,18 @@ $(function () {
         $("#flash_message").empty();
 
         let ajax = $.ajax({
-                type: "PUT",
-                url: `/inventory/${product_id}`,
-                contentType: "application/json",
-                data: JSON.stringify(data)
-            })
+            type: "PUT",
+            url: `/inventory/${product_id}`,
+            contentType: "application/json",
+            data: JSON.stringify(data)
+        })
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             update_form_data(res)
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             flash_message(res.responseJSON.message)
         });
 
@@ -137,13 +137,13 @@ $(function () {
             data: ''
         })
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             //alert(res.toSource())
             update_form_data(res)
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             clear_form_data()
             flash_message(res.responseJSON.message)
         });
@@ -156,7 +156,7 @@ $(function () {
 
     $("#delete-btn").click(function () {
 
-        let product_id= $("#product_id").val();
+        let product_id = $("#product_id").val();
 
         $("#flash_message").empty();
 
@@ -167,12 +167,12 @@ $(function () {
             data: '',
         })
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             clear_form_data()
             flash_message("Inventory item has been Deleted!")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             flash_message("Server error!")
         });
     });
@@ -266,12 +266,12 @@ $(function () {
             data: ''
         });
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             update_form_data(res);
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             flash_message(res.responseJSON.message)
         });
     });
@@ -292,13 +292,50 @@ $(function () {
             data: ''
         });
 
-        ajax.done(function(res){
+        ajax.done(function (res) {
             update_form_data(res);
             flash_message("Success")
         });
 
-        ajax.fail(function(res){
+        ajax.fail(function (res) {
             flash_message(res.responseJSON.message)
         });
     });
+
+    // ****************************************
+    // List All Inventory Items
+    // ****************************************
+    $("#list-all-btn").click(function () {
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/inventory`,
+            dataType: "json"
+        });
+
+        ajax.done(function (res) {
+            $("#search_results").empty();
+            if (res.length === 0) {
+                flash_message("No items found");
+                return;
+            }
+            let table = '<table class="table table-bordered"><thead><tr>';
+            table += '<th>ID</th><th>Name</th><th>Description</th><th>Quantity</th><th>Price</th><th>Product ID</th><th>Restock Level</th><th>Condition</th>';
+            table += '</tr></thead><tbody>';
+            for (let i = 0; i < res.length; i++) {
+                let item = res[i];
+                table += `<tr id="row_${item.id}"><td>${item.id}</td><td>${item.name}</td><td>${item.description}</td><td>${item.quantity}</td><td>${item.price}</td><td>${item.product_id}</td><td>${item.restock_level}</td><td>${item.condition}</td></tr>`;
+            }
+            table += '</tbody></table>';
+            $("#search_results").append(table);
+
+            flash_message("Success");
+        });
+
+        ajax.fail(function (res) {
+            flash_message(res.responseJSON.message);
+        });
+    });
+
 })
