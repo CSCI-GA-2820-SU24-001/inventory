@@ -80,12 +80,52 @@ $(function () {
     // Update a Product
     // ****************************************
 
+    $("#update-btn").click(function () {
+
+        let name = $("#product_name").val();
+        let description = $("#product_description").val();
+        let quantity = parseInt($("#product_quantity").val(), 10);
+        let price = parseFloat($("#product_price").val());
+        let product_id = parseInt($("#product_product_id").val(), 10);
+        let restock_level = parseInt($("#product_restock_level").val(), 10);
+        let condition = $("#product_condition").val();
+
+        let data = {
+            "name": name,
+            "description": description,
+            "quantity": quantity,
+            "price": price,
+            "product_id": product_id,
+            "restock_level": restock_level,
+            "condition": condition
+        };
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+                type: "PUT",
+                url: `/inventory/${product_id}`,
+                contentType: "application/json",
+                data: JSON.stringify(data)
+            })
+
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+
+    });
+
 
     // ****************************************
     // Retrieve a Product
     // ****************************************
     $("#retrieve-btn").click(function () {
-
+      
         let product_id = $("#product_id").val();
 
         $("#flash_message").empty();
@@ -236,4 +276,29 @@ $(function () {
         });
     });
 
+    // ****************************************
+    // Archive an Inventory Item
+    // ****************************************
+    $("#archive-btn").click(function () {
+
+        let inventory_id = $("#product_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/inventory/${inventory_id}/archive`,
+            contentType: "application/json",
+            data: ''
+        });
+
+        ajax.done(function(res){
+            update_form_data(res);
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
 })
