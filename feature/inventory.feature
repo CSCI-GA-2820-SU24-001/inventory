@@ -86,7 +86,7 @@ Feature: Inventory Management
       | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
       | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
       | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
- 
+
   Scenario: Read an inventory item
     When I visit the "Home Page"
     And I set the "Product ID" to "890"
@@ -119,7 +119,7 @@ Feature: Inventory Management
     When I set the "Product ID" to "34"
     And I press the "Archive" button
     Then I should see the message "400 Bad Request: Item is already archived" in the results
-    
+
   Scenario: Update an inventory item
     When I visit the "Home Page"
     And I set the "Name" to "tablet"
@@ -145,3 +145,14 @@ Feature: Inventory Management
     Then I should see the message "Success"
     And I should see "updated tablet" in the results
     And I should not see "tablet" in the results
+
+  Scenario: List all inventory items
+    When I visit the "Home Page"
+    And I press the "List All" button
+    Then I should see the message "Success"
+    And I should see the following items in the results:
+      | id  | name   | description | quantity | price | product_id | restock_level | condition |
+      | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
+      | 567 | tablet | Electronics | 50       | 500   | 2          | 5             | OPEN      |
+      | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
+      | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
