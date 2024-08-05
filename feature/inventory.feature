@@ -86,9 +86,41 @@ Feature: Inventory Management
       | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
       | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
       | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
+ 
+  Scenario: Read an inventory item
+    When I visit the "Home Page"
+    And I set the "Product ID" to "890"
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "chair" in the results
+    And I should see "Furniture" in the results
+    And I should see "75" in the results
+    And I should not see "laptop" in the results
+    And I should not see "tablet" in the results
+    And I should not see "marker" in the results
 
+  Scenario: Decrement an inventory item quantity
+    When I visit the "Home Page"
+    And I set the "product_id" to "34"
+    And I press the "Decrement" button
+    Then I should see the message "Success"
+    And I should see "laptop" in the results
+    And I should see "24" in the results
+    And I should not see "25" in the results
 
-Scenario: Update an inventory item
+  Scenario: Archive an inventory item
+    When I visit the "Home Page"
+    And I set the "Product ID" to "34"
+    And I press the "Archive" button
+    Then I should see the message "Success"
+    And I should see "laptop" in the results
+    And I should see "Archived" in the results
+    And I should not see "NEW" in the results
+    When I set the "Product ID" to "34"
+    And I press the "Archive" button
+    Then I should see the message "400 Bad Request: Item is already archived" in the results
+    
+  Scenario: Update an inventory item
     When I visit the "Home Page"
     And I set the "Name" to "tablet"
     And I press the "Search" button
@@ -113,4 +145,3 @@ Scenario: Update an inventory item
     Then I should see the message "Success"
     And I should see "updated tablet" in the results
     And I should not see "tablet" in the results
-
