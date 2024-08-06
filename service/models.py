@@ -15,7 +15,7 @@ quantity (integer) - the quantity of the item in stock
 price (Numeric) - the price of the item
 product_id (integer) - the id of the product
 restock_level (integer) - the level at which restocking is needed
-condition (string) - the condition of the item (new, open box, used)
+condition (string) - the condition of the item (new, open box, used, archived)
 
 """
 
@@ -47,6 +47,7 @@ class Condition(Enum):
     NEW = "new"
     OPEN_BOX = "open box"
     USED = "used"
+    ARCHIVED = "archived"
 
 
 class InventoryItem(db.Model):  # pylint: disable=too-many-instance-attributes
@@ -185,7 +186,7 @@ class InventoryItem(db.Model):  # pylint: disable=too-many-instance-attributes
 
     def _validate_condition(self, condition):
         if condition is not None:
-            if condition in ["new", "open box", "used"]:
+            if condition in ["new", "open box", "used", "archived"]:
                 return condition
             raise DataValidationError(
                 "Invalid value for [condition]: " + str(condition)
