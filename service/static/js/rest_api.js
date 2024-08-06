@@ -125,7 +125,7 @@ $(function () {
     // Retrieve a Product
     // ****************************************
     $("#retrieve-btn").click(function () {
-
+      
         let product_id = $("#product_id").val();
 
         $("#flash_message").empty();
