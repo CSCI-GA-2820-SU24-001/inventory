@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: apply-manifests
+  annotations:
+    tekton.dev/categories: Deployment
+    tekton.dev/displayName: deploy
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev.platforms: "linux/amd64"
+    tekton.dev.tags: "openshift, deploy"
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  description: This task will deploy all of the yaml files in the manifest folder.
+  params:
+    - name: manifest-dir
+      type: string
+      description: The directory in source that contains yaml manifests
+      default: k8s
+  steps:
+    - name: apply
+      image: "quay.io/openshift/origin-cli:latest"
+      script: |
+        echo Applying manifests in $(inputs.params.manifest-dir) directory
+        oc apply -f $(inputs.params.manifest-dir)
+        echo -----------------------------------
+      command:
+        - /bin/bash
+        - -c
+      workingDir: /workspace/source
+  workspaces:
+    - name: source

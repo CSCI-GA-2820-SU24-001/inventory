@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: deploy-image
+  annotations:
+    tekton.dev/categories: Deployment
+    tekton.dev/displayName: deploy image
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev.platforms: "linux/amd64"
+    tekton.dev/tags: "openshift, deploy"
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  description: >
+    This task will update the deployment.yaml with the latest image name and then apply that yaml file and its service file.
+  params:
+    - name: image-name
+      type: string
+      description: The fully qualified name of the new image to deploy
+    - name: manifest-dir
+      type: string
+      description: The directory in source that contains yaml manifests
+      default: k8s
+  steps:
+    - name: deploy
+      image: "quay.io/openshift/origin-cli:latest"
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo Applying manifests in $(inputs.params.manifest-dir) directory
+
+        echo "**********************************************************************"
+        echo "Installing YQ..."
+        echo "**********************************************************************"
+        wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        chmod a+x /usr/bin/yq
+
+        echo "*********************  DEPLOYMENT  ***********************"
+        echo "Deploying $(inputs.params.image-name) ..."
+
+        yq -e -i '.spec.template.spec.containers[0].image="$(inputs.params.image-name)"' $(inputs.params.manifest-dir)/deployment.yaml
+        cat $(inputs.params.manifest-dir)/deployment.yaml
+
+        echo "************************************************************"
+        echo "OC APPLY..."
+        oc apply -f $(inputs.params.manifest-dir)/deployment.yaml
+        oc apply -f $(inputs.params.manifest-dir)/service.yaml
+
+        echo "************************************************************"
+        sleep 3
+        echo "Pods:"
+        oc get pods
+        echo ""
+      command:
+        - /bin/bash
+        - -c
+      workingDir: /workspace/source
+  workspaces:
+    - name: source

@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: behave
+  annotations:
+    tekton.dev/categories: Testing
+    tekton.dev/displayName: bdd tests
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev.platforms: "linux/amd64"
+    tekton.dev/tags: "python, bdd, behave"
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  description: This task can be used to perform bdd tests with behave.
+  params:
+    - name: base-url
+      type: string
+      description: The url of the application to test
+    - name: wait-seconds
+      type: string
+      description: The number of seconds to wait for a reply
+      default: "60"
+    - name: driver
+      type: string
+      description: The web driver to use (chrome or firefox)
+      default: chrome
+  steps:
+    - name: behave
+      image: rofrano/pipeline-selenium
+      env:
+        - name: BASE_URL
+          value: $(params.base-url)
+        - name: WAIT_SECONDS
+          value: $(params.wait-seconds)
+        - name: DRIVER
+          value: $(params.driver)
+      script: |
+        #!/bin/bash
+        set -e
+        export PATH=$PATH:$HOME/.local/bin:
+
+        echo "***** Installing dependencies *****"
+        if [ -e "poetry.lock" ]; then
+          echo "Found poetry.lock file: using poetry"
+          python -m pip install poetry poetry-plugin-export
+          poetry export --with=dev -f requirements.txt --output requirements.txt
+        fi
+        python -m pip install --user -r requirements.txt
+
+        echo "***** Running Tests *****"
+        behave
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - name: source
