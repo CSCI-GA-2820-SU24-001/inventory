@@ -36,7 +36,7 @@ lint: ## Run the linter
 	flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
 	pylint service tests --max-line-length=127
 
-.PHONY: tests
+.PHONY: test
 test: ## Run the unit tests
 	$(info Running tests...)
 	pytest --pspec --cov=service --cov-fail-under=95
@@ -56,9 +56,34 @@ cluster: ## Create a K3D Kubernetes cluster with load balancer and registry
 .PHONY: cluster-rm
 cluster-rm: ## Remove a K3D Kubernetes cluster
 	$(info Removing Kubernetes cluster...)
-	k3d cluster delete
+	k3d cluster delete $(CLUSTER)
+
+.PHONY: build
+build: ## Build the Docker image
+	$(info Building the Docker image...)
+	docker build -t inventory:latest .
+
+.PHONY: tag
+tag: ## Create a tag for the Docker image
+	$(info Tagging the Docker image...)
+	docker tag inventory:latest cluster-registry:5000/inventory:latest
+
+.PHONY: push
+push: ## Push the Docker image to the cluster registry
+	$(info Pushing the Docker image...)
+	docker push cluster-registry:5000/inventory:latest
 
 .PHONY: deploy
-depoy: ## Deploy the service on local Kubernetes
+deploy: ## Deploy the service on local Kubernetes
 	$(info Deploying service locally...)
 	kubectl apply -f k8s/
+
+.PHONY: kc-get
+kc-get: ## Get all Kubernetes resources
+	$(info Getting all Kubernetes resources...)
+	kubectl get all
+
+.PHONY: kc-list
+kc-list: ## List all K3D clusters
+	$(info Listing all K3D clusters...)
+	k3d cluster list

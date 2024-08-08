@@ -93,3 +93,100 @@ Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/
 Licensed under the Apache License. See [LICENSE](LICENSE)
 
 This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
+
+## Kubernetes Cluster
+
+This section provides instructions on how to manage your Kubernetes cluster and deploy your application using the provided Makefile.
+
+### Commands
+
+- **Create a Kubernetes Cluster:**
+  To create a Kubernetes cluster with a load balancer and a registry, run:
+  ```sh
+  make cluster
+  ```
+  This command creates a K3D Kubernetes cluster with one agent node and a local registry.
+
+- **List Existing Kubernetes Clusters:**
+  To list all existing K3D clusters, run:
+  ```sh
+  make kc-list
+  ```
+  This command lists all the K3D clusters currently available on your system.
+
+- **Remove a Kubernetes Cluster:**
+  To remove a Kubernetes cluster, run:
+  ```sh
+  make cluster-rm
+  ```
+  This command deletes the K3D Kubernetes cluster specified by the `CLUSTER` variable (default is `nyu-devops`).
+
+- **Build the Docker Image:**
+  To build the Docker image for your application, run:
+  ```sh
+  make build
+  ```
+  This command builds a Docker image with the tag `inventory:latest`.
+
+- **Tag the Docker Image:**
+  To create a tag for the Docker image, run:
+  ```sh
+  make tag
+  ```
+  This command tags the `inventory:latest` Docker image with `cluster-registry:5000/inventory:latest`.
+
+- **Push the Docker Image:**
+  To push the Docker image to the cluster registry, run:
+  ```sh
+  make push
+  ```
+  This command pushes the Docker image tagged as `cluster-registry:5000/inventory:latest` to the cluster registry.
+
+- **Deploy the Service to Kubernetes:**
+  To deploy your service to the local Kubernetes cluster, run:
+  ```sh
+  make deploy
+  ```
+  This command applies the Kubernetes configurations found in the `k8s/` directory to deploy the service.
+
+- **Get All Kubernetes Resources:**
+  To retrieve all Kubernetes resources in the current context, run:
+  ```sh
+  make kc-get
+  ```
+  This command lists all Kubernetes resources in the cluster.
+
+### Example Workflow
+
+1. **Create the Kubernetes Cluster:**
+   ```sh
+   make cluster
+   ```
+
+2. **Build and Tag the Docker Image:**
+   ```sh
+   make build
+   make tag
+   ```
+
+3. **Push the Docker Image to the Registry:**
+   ```sh
+   make push
+   ```
+
+4. **Deploy the Application to Kubernetes:**
+   ```sh
+   make deploy
+   ```
+
+5. **List All Kubernetes Resources:**
+   ```sh
+   make kc-get
+   ```
+
+6. **Remove the Kubernetes Cluster:**
+   ```sh
+   make cluster-rm
+   ```
+
+These steps will help you manage your Kubernetes cluster and deploy your application seamlessly.
