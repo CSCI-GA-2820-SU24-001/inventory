@@ -1,16 +1,14 @@
-# import requests
-# from behave import given, when, then
+# pylint: disable=function-redefined
+# flake8: noqa
+"""
+Inventory Steps
 
+Steps file for Inventory.feature
 
-# @given("the server is started")
-# def step_impl(context):
-#     context.base_url = os.getenv("BASE_URL", "http://localhost:8080")
-
-#     context.resp = requests.get(context.base_url + "/")
-#     assert context.resp.status_code == 200
-
+For information on Waiting until elements are present in the HTML see:
+    https://selenium-python.readthedocs.io/waits.html
+"""
 import requests
-from compare3 import expect
 from behave import given  # pylint: disable=no-name-in-module
 
 # HTTP Return Codes
@@ -23,27 +21,29 @@ WAIT_TIMEOUT = 60
 
 @given("the following items")
 def step_impl(context):
-    """Delete all items and load new ones"""
+    """Delete all Inventory Items and load new ones"""
 
-    # Get a list all of the items
+    # Get a list of all the inventory items
     rest_endpoint = f"{context.base_url}/inventory"
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
-    expect(context.resp.status_code).equal_to(HTTP_200_OK)
+    assert context.resp.status_code == HTTP_200_OK
     # and delete them one by one
-    for inventory in context.resp.json():
+    for item in context.resp.json():
         context.resp = requests.delete(
-            f"{rest_endpoint}/{inventory['id']}", timeout=WAIT_TIMEOUT
+            f"{rest_endpoint}/{item['id']}", timeout=WAIT_TIMEOUT
         )
-        expect(context.resp.status_code).equal_to(HTTP_204_NO_CONTENT)
+        assert context.resp.status_code == HTTP_204_NO_CONTENT
 
     # load the database with new items
     for row in context.table:
         payload = {
             "name": row["name"],
-            "category": row["category"],
-            "available": row["available"] in ["True", "true", "1"],
-            "gender": row["gender"],
-            "birthday": row["birthday"],
+            "description": row["description"],
+            "quantity": int(row["quantity"]),
+            "price": float(row["price"]),
+            "product_id": int(row["product_id"]),
+            "restock_level": int(row["restock_level"]),
+            "condition": row["condition"],
         }
         context.resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
-        expect(context.resp.status_code).equal_to(HTTP_201_CREATED)
+        assert context.resp.status_code == HTTP_201_CREATED
