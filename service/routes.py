@@ -120,7 +120,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # RETRIEVE AN ITEM
     # ------------------------------------------------------------------
-    # @api.doc("get_inventory_items")
+    @api.doc("get_inventory_items")
     @api.response(404, "Item not found")
     @api.marshal_with(inventoryItem_model)
     def get(self, item_id):
@@ -142,7 +142,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING ITEM
     # ------------------------------------------------------------------
-    # @api.doc("update_inventory_items")
+    @api.doc("update_inventory_items")
     @api.response(404, "Item not found")
     @api.response(400, "The posted item data was not valid")
     @api.expect(inventoryItem_model)
@@ -174,7 +174,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # DELETE AN ITEM
     # ------------------------------------------------------------------
-    # @api.doc("delete_inventory_items")
+    @api.doc("delete_inventory_items")
     @api.response(204, "Item deleted")
     def delete(self, item_id):
 
@@ -205,7 +205,7 @@ class InventoryItemCollection(Resource):
     # ------------------------------------------------------------------
     # LIST ALL ITEMS
     # ------------------------------------------------------------------
-    # @api.doc("list_inventory_items")
+    @api.doc("list_inventory_items")
     @api.expect(inventoryItem_args, validate=True)
     @api.marshal_list_with(inventoryItem_model)
     def get(self):
@@ -233,7 +233,7 @@ class InventoryItemCollection(Resource):
     # ------------------------------------------------------------------
     # ADD A NEW ITEM
     # ------------------------------------------------------------------
-    # @api.doc("create_inventory_items")
+    @api.doc("create_inventory_items")
     @api.response(400, "The posted data was not valid")
     @api.expect(create_model)
     @api.marshal_with(inventoryItem_model, code=201)
@@ -280,7 +280,7 @@ class InventoryItemCollection(Resource):
 class ArchiveResource(Resource):
     """Archive action on a item"""
 
-    # @api.doc("archive_items")
+    @api.doc("archive_items")
     @api.response(404, "Item not found")
     @api.response(409, "The Item is not available to archive")
     def put(self, item_id):
@@ -311,7 +311,7 @@ class ArchiveResource(Resource):
 class DecrementResource(Resource):
     """Decrement actions on a Inventory item"""
 
-    # @api.doc("decrement_items")
+    @api.doc("decrement_items")
     @api.response(404, "Item not found")
     @api.response(409, "The item is not there to decrement")
     def put(self, item_id):
