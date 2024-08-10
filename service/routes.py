@@ -21,10 +21,11 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Inventory items.
 """
 
-from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
+from flask_restx import Resource, reqparse, fields
 from service.models import InventoryItem
 from service.common import status  # HTTP Status Codes
+from . import api
 
 
 ######################################################################
@@ -33,7 +34,7 @@ from service.common import status  # HTTP Status Codes
 @app.route("/health")
 def health_check():
     """Let them know our heart is still beating"""
-    return jsonify(status=200, message="Healthy"), status.HTTP_200_OK
+    return {"status": "OK"}, status.HTTP_200_OK
 
 
 ######################################################################
@@ -46,205 +47,299 @@ def index():
     return app.send_static_file("index.html")
 
 
+# Define the model so that the docs reflect what can be sent
+create_model = api.model(
+    "InventoryItem",
+    {
+        "id": fields.Integer(required=True, description="ID of the product"),
+        "name": fields.String(required=True, description="The name of the inventory item"),
+        "description": fields.String(required=True, description="The description of the inventory item"),
+        "quantity": fields.Integer(
+            required=True, description="Quantity of inventory item"
+        ),
+        "price": fields.Float(required=True, description="Price of the product"),
+        "product_id": fields.Integer(required=True, description="ID of the product"),
+        "restock_level": fields.Integer(
+            required=True, description="Restock level of inventory item"
+        ),
+        "condition": fields.String(
+            required=True,
+            description="The condition of the inventory item (e.g., new, open box, used, archived.)",
+        ),
+    },
+)
+
+inventoryItem_model = api.inherit(
+    "InventoryItem",
+    create_model,
+    {
+        "id": fields.Integer(
+            readOnly=True, description="The unique id assigned internally by service"
+        ),
+        "product_id": fields.Integer(
+            readOnly=True, description="The unique product id assigned internally by service"
+        ),
+    },
+)
+
+# query string arguments
+inventoryItem_args = reqparse.RequestParser()
+inventoryItem_args.add_argument(
+    "name", type=str, location="args", required=False, help="List InventoryItems by name"
+)
+inventoryItem_args.add_argument(
+    "condition", type=str, location="args", required=False, help="List InventoryItems by condition"
+)
+inventoryItem_args.add_argument(
+    "id",
+    type=int,
+    location="args",
+    required=False,
+    help="List InventoryItems by it's id",
+)
+
 ######################################################################
-# READ AN INVENTORY ITEM
+#  R E S T   A P I   E N D P O I N T S
 ######################################################################
-@app.route("/inventory/<int:item_id>", methods=["GET"])
-def get_items(item_id):
+
+
+######################################################################
+#  PATH: /inventory/{id}
+######################################################################
+@api.route("/inventory/<int:item_id>")
+@api.param("item_id", "The InventoryItem identifier")
+class InventoryItemResource(Resource):
     """
-    Retrieve a single Item
+    InventoryItemResource class
 
-    This endpoint will return a Item based on it's id
+    Allows the manipulation of a single inventory item
+    GET /item{id} - Returns an item with the id
+    PUT /item{id} - Update an item with the id
+    DELETE /item{id} -  Deletes an item with the id
     """
-    app.logger.info("Request to Retrieve a item with id [%s]", item_id)
+    # ------------------------------------------------------------------
+    # RETRIEVE AN ITEM
+    # ------------------------------------------------------------------
+    # @api.doc("get_inventory_items")
+    @api.response(404, "Item not found")
+    @api.marshal_with(inventoryItem_model)
+    def get(self, item_id):
+        """
+        Retrieve a single inventory item
 
-    # Attempt to find the Item and abort if not found
-    item = InventoryItem.find(item_id)
-    if not item:
-        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+        This endpoint will return a item based on it's id
+        """
+        app.logger.info("Request to Retrieve a item with id [%s]", item_id)
 
-    app.logger.info("Returning item: %s", item.name)
-    return jsonify(item.serialize()), status.HTTP_200_OK
+        # Attempt to find the Item and abort if not found
+        item = InventoryItem.find(item_id)
+        if not item:
+            error(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
 
+        app.logger.info("Returning item: %s", item.name)
+        return item.serialize(), status.HTTP_200_OK
 
-######################################################################
-# CREATE A NEW INVENTORY ITEM
-######################################################################
-@app.route("/inventory", methods=["POST"])
-def create_inventory_item():
-    """
-    Create an Inventory Item
-    This endpoint will create an Inventory Item based on the data in the body that is posted
-    """
-    app.logger.info("Request to Create an Inventory Item...")
-    check_content_type("application/json")
+    # ------------------------------------------------------------------
+    # UPDATE AN EXISTING ITEM
+    # ------------------------------------------------------------------
+    # @api.doc("update_inventory_items")
+    @api.response(404, "Item not found")
+    @api.response(400, "The posted item data was not valid")
+    @api.expect(inventoryItem_model)
+    @api.marshal_with(inventoryItem_model)
+    def put(self, item_id):
+        """
+        Update an item
 
-    item = InventoryItem()
-    # Get the data from the request and deserialize it
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    item.deserialize(data)
+        This endpoint will update an item based the body that is posted
+        """
+        app.logger.info("Request to Update an item with id [%s]", item_id)
 
-    # Save the new Inventory Item to the database
-    item.create()
-    app.logger.info("Inventory Item with new id [%s] saved!", item.id)
+        # Attempt to find the item and abort if not found
+        item = InventoryItem.find(item_id)
+        if not item:
+            error(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
 
-    # Return the location of the new Inventory Item
-    location_url = url_for("get_items", item_id=item.id, _external=True)
-    return (
-        jsonify(item.serialize()),
-        status.HTTP_201_CREATED,
-        {"Location": location_url},
-    )
+        # Update the Item with the new data
+        data = api.payload
+        app.logger.info("Processing: %s", data)
+        item.deserialize(data)
 
+        # Save the updates to the database
+        item.update()
 
-######################################################################
-# LIST ALL INVENTORY ITEMS
-######################################################################
+        app.logger.info("Item with ID: %d updated.", item.id)
+        return item.serialize(), status.HTTP_200_OK
 
+    # ------------------------------------------------------------------
+    # DELETE AN ITEM
+    # ------------------------------------------------------------------
+    # @api.doc("delete_inventory_items")
+    @api.response(204, "Item deleted")
+    def delete(self, item_id):
 
-@app.route("/inventory", methods=["GET"])
-def list_inventory_items():
-    """Returns all of the Inventory Items"""
-    app.logger.info("Request for inventory item list")
+        """
+        Delete an Inventory Item
 
-    items = []
+        This endpoint will delete an Inventory Item based the id specified in the path
+        """
+        app.logger.info("Request to Delete an inventory with id [%s]", item_id)
 
-    # Parse any arguments from the query string
-    condition = request.args.get("condition")
-    name = request.args.get("name")
-    item_id = request.args.get("id")
-    condition = request.args.get("condition")
-
-    if condition:
-        app.logger.info("Find by condition: %s", condition)
-        items = InventoryItem.find_by_condition(condition)
-    elif name:
-        app.logger.info("Find by name: %s", name)
-        items = InventoryItem.find_by_name(name)
-    elif item_id:
-        app.logger.info("Find by id: %s", item_id)
-        items = InventoryItem.find(item_id)
-    else:
-        app.logger.info("Find all")
-        items = InventoryItem.all()
-
-    results = [item.serialize() for item in items]
-    app.logger.info("Returning %d inventory items", len(results))
-    return jsonify(results), status.HTTP_200_OK
-
-
-######################################################################
-# UPDATE AN EXISTING INVENTORY ITEM
-######################################################################
-@app.route("/inventory/<int:item_id>", methods=["PUT"])
-def update_item(item_id):
-    """
-    Update an item
-
-    This endpoint will update an item based the body that is posted
-    """
-    app.logger.info("Request to Update an item with id [%s]", item_id)
-    check_content_type("application/json")
-
-    # Attempt to find the item and abort if not found
-    item = InventoryItem.find(item_id)
-    if not item:
-        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
-
-    # Update the Item with the new data
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    item.deserialize(data)
-
-    # Save the updates to the database
-    item.update()
-
-    app.logger.info("Item with ID: %d updated.", item.id)
-    return jsonify(item.serialize()), status.HTTP_200_OK
+        # Delete the Inventory if it exists
+        item = InventoryItem.find(item_id)
+        if item:
+            app.logger.info("Inventory with ID: %d found.", item_id)
+            item.delete()
+            app.logger.info("Inventory with ID: %d delete complete.", item_id)
+        return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
-# DELETE AN INVENTORY ITEM
+#  PATH: /inventory
 ######################################################################
-@app.route("/inventory/<int:inventory_id>", methods=["DELETE"])
-def delete_inventory(inventory_id):
-    """
-    Delete an Inventory
 
-    This endpoint will delete an Inventory based the id specified in the path
-    """
-    app.logger.info("Request to Delete an inventory with id [%s]", inventory_id)
+@api.route("/inventory", strict_slashes=False)
+class InventoryItemCollection(Resource):
+    """Handles all interactions with collections of InventoryItems"""
 
-    # Delete the Inventory if it exists
-    inventory = InventoryItem.find(inventory_id)
-    if inventory:
-        app.logger.info("Inventory with ID: %d found.", inventory.id)
-        inventory.delete()
+    # ------------------------------------------------------------------
+    # LIST ALL ITEMS
+    # ------------------------------------------------------------------
+    # @api.doc("list_inventory_items")
+    @api.expect(inventoryItem_args, validate=True)
+    @api.marshal_list_with(inventoryItem_model)
+    def get(self):
+        """Returns all of the Inventory Items"""
+        app.logger.info("Request for inventory item list")
+        items = []
+        args = inventoryItem_args.parse_args()
+        if args["condition"]:
+            app.logger.info("Filtering by condition: %s", args["condition"])
+            items = InventoryItem.find_by_condition(args["condition"])
+        elif args["name"]:
+            app.logger.info("Filtering by name: %s", args["name"])
+            items = InventoryItem.find_by_name(args["name"])
+        elif args["item_id"] is not None:
+            app.logger.info("Filtering by id: %s", args["available"])
+            items = InventoryItem.find_by_availability(args["available"])
+        else:
+            app.logger.info("Returning unfiltered list.")
+            items = InventoryItem.all()
 
-    app.logger.info("Inventory with ID: %d delete complete.", inventory_id)
-    return {}, status.HTTP_204_NO_CONTENT
+        app.logger.info("[%s] Inventory items returned", len(items))
+        results = [item.serialize() for item in items]
+        return results, status.HTTP_200_OK
+
+    # ------------------------------------------------------------------
+    # ADD A NEW ITEM
+    # ------------------------------------------------------------------
+    # @api.doc("create_inventory_items")
+    @api.response(400, "The posted data was not valid")
+    @api.expect(create_model)
+    @api.marshal_with(inventoryItem_model, code=201)
+    def post(self):
+        """
+        Creates an item
+        This endpoint will create a Inventory item based the data in the body that is posted
+        """
+        app.logger.info("Request to Create an Item")
+        item = InventoryItem()
+        app.logger.debug("Payload = %s", api.payload)
+        item.deserialize(api.payload)
+        item.create()
+        app.logger.info("Inventory Item with new id [%s] saved!", item.id)
+        location_url = api.url_for(InventoryItemResource, item_id=item.id, _external=True)
+        return item.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
+
+    # # ------------------------------------------------------------------
+    # # DELETE ALL ITEMS (for testing only)
+    # # ------------------------------------------------------------------
+    # # @api.doc("delete_all_items")
+    # @api.response(204, "All Items deleted")
+    # def delete(self):
+    #     """
+    #     Delete all Item
+
+    #     This endpoint will delete all Item only if the system is under test
+    #     """
+    #     app.logger.info("Request to Delete all items...")
+    #     if "TESTING" in app.config and app.config["TESTING"]:
+    #         InventoryItem.remove_all()
+    #         app.logger.info("Removed all items from the database")
+    #     else:
+    #         app.logger.warning("Request to clear database while system not under test")
+
+    #     return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
-# ARCHIVE ITEM  (new action endpoint)
+#  PATH: /inventory/{id}/archive
 ######################################################################
-@app.route("/inventory/<int:item_id>/archive", methods=["PUT"])
-def archive_item(item_id):
-    """
-    Archive an item
+@api.route("/inventory/<int:item_id>/archive")
+@api.param("item_id", "The InventoryItem identifier")
+class ArchiveResource(Resource):
+    """Archive action on a item"""
 
-    This endpoint will mark an item as archived based on the id specified in the path
-    """
-    app.logger.info("Request to archive item with id [%s]", item_id)
+    # @api.doc("archive_items")
+    @api.response(404, "Item not found")
+    @api.response(409, "The Item is not available to archive")
+    def put(self, item_id):
+        """
+        Archive an item
 
-    # Find the item and abort if not found
-    item = InventoryItem.find(item_id)
-    if not item:
-        abort(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
+        This endpoint will mark an item as archived based on the id specified in the path
+        """
+        app.logger.info("Request to archive item with id [%s]", item_id)
+        # Find the item and abort if not found
+        item = InventoryItem.find(item_id)
+        if not item:
+            error(status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found.")
 
-    if item.condition == "archived":
-        abort(status.HTTP_400_BAD_REQUEST, "Item is already archived.")
-
-    # Update the condition to archived
-    item.condition = "archived"
-    item.update()
-
-    app.logger.info("Item with ID: %d archived.", item.id)
-    return jsonify(item.serialize()), status.HTTP_200_OK
+        if item.condition == "archived":
+            error(status.HTTP_400_BAD_REQUEST, "Item is already archived.")
+        item.condition = "archived"
+        item.update()
+        app.logger.info("Item with ID: %d archived.", item.id)
+        return item.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
-# DECREMENT AN ITEM QUANTITY
+#  PATH: /inventory/{id}/decrement
 ######################################################################
-@app.route("/inventory/<int:inventory_id>/decrement", methods=["PUT"])
-def decrement_an_inventory_item_quantity(inventory_id):
-    """
-    Decrement an inventory item quantity
+@api.route("/inventory/<int:inventory_id>/decrement")
+@api.param("item_id", "The InventoryItem identifier")
+class DecrementResource(Resource):
+    """Decrement actions on a Inventory item"""
 
-    This endpoint will decrement an Inventory item's quantity based the id specified in the path
-    """
-    app.logger.info(
-        "Request to decrement the quantity of an inventory with id [%s]", inventory_id
-    )
-    item = InventoryItem.find(inventory_id)
+    # @api.doc("decrement_items")
+    @api.response(404, "Item not found")
+    @api.response(409, "The item is not there to decrement")
+    def put(self, item_id):
+        """
+        Decrement an inventory item quantity
 
-    if not item:
-        abort(
-            status.HTTP_404_NOT_FOUND, f"Item with id '{inventory_id}' was not found."
+        This endpoint will decrement an Inventory item's quantity based the id specified in the path
+        """
+        app.logger.info(
+            "Request to decrement the quantity of an inventory with id [%s]", item_id
         )
+        item = InventoryItem.find(item_id)
 
-    # decrement the current quantity for this item
-    item.quantity -= 1
-    item.quantity = max(item.quantity, 0)
+        if not item:
+            error(
+                status.HTTP_404_NOT_FOUND, f"Item with id '{item_id}' was not found."
+            )
 
-    item.update()
+        # decrement the current quantity for this item
+        item.quantity -= 1
+        item.quantity = max(item.quantity, 0)
 
-    if item.quantity < item.restock_level:
-        trigger_insufficient_product_notification(item)
+        item.update()
 
-    app.logger.info("The quantity of the item with ID: %d decremented.", item.id)
-    return jsonify(item.serialize()), status.HTTP_200_OK
+        if item.quantity < item.restock_level:
+            trigger_insufficient_product_notification(item)
+        app.logger.info("The quantity of the item with ID: %d decremented.", item.id)
+        return item.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
@@ -264,24 +359,10 @@ def trigger_insufficient_product_notification(item):
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
-
-######################################################################
-# Checks the ContentType of a request
-######################################################################
-def check_content_type(content_type) -> None:
-    """Checks that the media type is correct"""
-    if "Content-Type" not in request.headers:
-        app.logger.error("No Content-Type specified.")
-        abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            f"Content-Type must be {content_type}",
-        )
-
-    if request.headers["Content-Type"] == content_type:
-        return
-
-    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
-    abort(
-        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        f"Content-Type must be {content_type}",
-    )
+# ------------------------------------------------------------------
+# Logs error messages before aborting
+# ------------------------------------------------------------------
+def error(status_code, reason):
+    """Logs the error and then aborts"""
+    app.logger.error(reason)
+    api.abort(status_code, reason)
