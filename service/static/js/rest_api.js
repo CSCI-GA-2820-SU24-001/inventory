@@ -60,7 +60,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "POST",
-            url: `/inventory`,
+            url: `/api/inventory`,
             contentType: "application/json",
             data: JSON.stringify(data),
             dataType: "json"
@@ -104,7 +104,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/${product_id}`,
+            url: `/api/inventory/${product_id}`,
             contentType: "application/json",
             data: JSON.stringify(data)
         })
@@ -132,7 +132,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory/${product_id}`,
+            url: `/api/inventory/${product_id}`,
             contentType: "application/json",
             data: ''
         })
@@ -162,7 +162,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "DELETE",
-            url: `/inventory/${product_id}`,
+            url: `/api/inventory/${product_id}`,
             contentType: "application/json",
             data: '',
         })
@@ -212,7 +212,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory?${queryString}`,
+            url: `/api/inventory?${queryString}`,
             dataType: "json"
         });
 
@@ -261,7 +261,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/${product_id}/decrement`,
+            url: `/api/inventory/${product_id}/decrement`,
             contentType: "application/json",
             data: ''
         });
@@ -287,7 +287,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/${inventory_id}/archive`,
+            url: `/api/inventory/${inventory_id}/archive`,
             contentType: "application/json",
             data: ''
         });
@@ -310,7 +310,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory`,
+            url: `/api/inventory`,
             dataType: "json"
         });
 
