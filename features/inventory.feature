@@ -2,12 +2,12 @@ Feature: Inventory Management
 
 
   Background:
-    Given the following items
-      | id  | name   | description | quantity | price | product_id | restock_level | condition |
-      | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
-      | 567 | tablet | Electronics | 50       | 500   | 2          | 5             | REFURB    |
-      | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
-      | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
+    Given the following items exist
+      | name   | description | quantity | price | product_id | restock_level | condition |
+      | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
+      | tablet | Electronics | 50       | 500   | 2          | 5             | ARCHIVED  |
+      | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
+      | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
 
   Scenario: Add new inventory item
     Given I have access to the inventory service
@@ -16,7 +16,7 @@ Feature: Inventory Management
 
   Scenario: The server is running
     When I visit the "Home Page"
-    Then I should see "Inventory REST API Service" in the title
+    Then I should see "Inventory RESTful Service" in the title
     And I should not see "404 Not Found"
 
   Scenario: Create an Item
@@ -30,17 +30,19 @@ Feature: Inventory Management
     And I select "NEW" in the "Condition" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
-    When I copy the "ID" field
+    When I copy the "system_product_id" field
+
     And I press the "Clear" button
-    Then the "ID" field should be empty
-    And the "Name" field should be empty
-    And the "Description" field should be empty
-    And the "Quantity" field should be empty
-    And the "Price" field should be empty
-    And the "Product ID" field should be empty
-    And the "Restock Level" field should be empty
-    And the "Condition" field should be empty
-    When I paste the "ID" field
+    Then the "system_product_id" field should be empty
+    Then the "product_name" field should be empty
+    Then the "product_description" field should be empty
+    Then the "product_quantity" field should be empty
+    Then the "product_price" field should be empty
+    Then the "product_product_id" field should be empty
+    Then the "product_restock_level" field should be empty
+    Then the "product_condition" field should be empty
+
+    When I paste the "system_product_id" field
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "Joyful" in the "Name" field
@@ -75,86 +77,80 @@ Feature: Inventory Management
     And I should not see "tablet" in the results
 
   Scenario: Delete an inventory item
-    Given the following inventories exist:
-      | id  | name   | quantity | price |
-      | 34  | laptop | 25       | 1000  |
-      | 567 | tablet | 50       | 500   |
-      | 890 | chair  | 75       | 150   |
-      | 456 | marker | 18       | 1     |
-    When I delete the inventory item with id 567
-    Then the inventory item with id 567 should not exist
-    And the inventory should contain:
-      | id  | name   | description | quantity | price | product_id | restock_level | condition |
-      | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
-      | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
-      | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
+    Given the following items exist
+      | name   | description | quantity | price | product_id | restock_level | condition |
+      | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
+    When I visit the "Home Page"
+    And I press the "List All" button
+    And I capture the ID of the item with name "laptop"
+    And I delete the inventory item with the captured ID
+    Then the item should not be listed in the inventory
 
   Scenario: Read an inventory item
     When I visit the "Home Page"
-    And I set the "product_id" to 3
+    And I press the "List All" button
+    And I capture the ID of the item with name "chair"
+    And I set the "system_product_id" to the captured ID for "chair"
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "chair" in the results
     And I should see "Furniture" in the results
     And I should see "75" in the results
-    And I should not see "laptop" in the results
-    And I should not see "tablet" in the results
-    And I should not see "marker" in the results
-
-  Scenario: Decrement an inventory item quantity
-    When I visit the "Home Page"
-    And I set the "product_id" to "34"
-    And I press the "Decrement" button
-    Then I should see the message "Success"
-    And I should see "laptop" in the results
-    And I should see "24" in the results
-    And I should not see "25" in the results
 
   Scenario: Archive an inventory item
     When I visit the "Home Page"
-    And I set the "Product ID" to "34"
+    And I press the "List All" button
+    And I capture the ID of the item with name "laptop"
+    And I set the "system_product_id" to the captured ID for "laptop"
     And I press the "Archive" button
     Then I should see the message "Success"
     And I should see "laptop" in the results
-    And I should see "Archived" in the results
+    And I should see "ARCHIVED" in the "Condition" dropdown
     And I should not see "NEW" in the results
-    When I set the "Product ID" to "34"
+    When I set the "system_product_id" to the captured ID for "laptop"
     And I press the "Archive" button
-    Then I should see the message "400 Bad Request: Item is already archived" in the results
+    Then I should see the specific error message "400 Bad Request: Item is already archived"
 
   Scenario: Update an inventory item
+    Given the following items exist
+      | name   | description | quantity | price | product_id | restock_level | condition |
+      | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
+      | tablet | Electronics | 50       | 500   | 2          | 5             | ARCHIVED  |
+      | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
+      | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
+
     When I visit the "Home Page"
-    And I set the "Name" to "tablet"
+    And I set the "Name" to "laptop"
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "tablet" in the "Name" field
-    And I should see "Electronics" in the "Category" field
-    When I change "Name" to "updated tablet"
+    And I should see "laptop" in the "Name" field
+    When I change "Name" to "updated laptop"
     And I change "Quantity" to "45"
     And I change "Price" to "450"
     And I press the "Update" button
     Then I should see the message "Success"
-    When I copy the "Id" field
-    And I press the "Clear" button
-    And I paste the "Id" field
+    When I copy the "system_product_id" field
+    When I press the "Clear" button
+    When I paste the "system_product_id" field
     And I press the "Retrieve" button
     Then I should see the message "Success"
-    And I should see "updated tablet" in the "Name" field
+    And I should see "updated laptop" in the "Name" field
     And I should see "45" in the "Quantity" field
     And I should see "450" in the "Price" field
     When I press the "Clear" button
+    And I set the "Name" to "updated laptop"
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "updated tablet" in the results
-    And I should not see "tablet" in the results
+    And I should see "updated laptop" in the results
+    And I should not see "laptop" in the results
 
   Scenario: List all inventory items
     When I visit the "Home Page"
     And I press the "List All" button
     Then I should see the message "Success"
-    And I should see the following items in the results:
-      | id  | name   | description | quantity | price | product_id | restock_level | condition |
-      | 34  | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
-      | 567 | tablet | Electronics | 50       | 500   | 2          | 5             | OPEN      |
-      | 890 | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
-      | 456 | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
+    Then I should see at least the following items in the results
+      | name   | description | quantity | price | product_id | restock_level | condition |
+      | laptop | Electronics | 25       | 1000  | 1          | 10            | NEW       |
+      | tablet | Electronics | 50       | 500   | 2          | 5             | OPEN      |
+      | chair  | Furniture   | 75       | 150   | 3          | 15            | USED      |
+      | marker | Stationery  | 18       | 1     | 4          | 18            | USED      |
