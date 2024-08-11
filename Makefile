@@ -1,5 +1,6 @@
 # These can be overidden with env vars.
-CLUSTER ?= nyu-devops
+# Default cluster name
+CLUSTER ?= k3s-default
 
 .SILENT:
 
@@ -46,17 +47,18 @@ test: ## Run the unit tests
 .PHONY: run
 run: ## Run the service
 	$(info Starting service...)
-	honcho start -p 8081
+	honcho start -p 8080
 
 .PHONY: cluster
 cluster: ## Create a K3D Kubernetes cluster with load balancer and registry
 	$(info Creating Kubernetes cluster with a registry and 1 node...)
-	k3d cluster create --agents 1 --registry-create cluster-registry:0.0.0.0:5000 --port '8080:80@loadbalancer'
+	k3d cluster create $(CLUSTER) --agents 1 --registry-create cluster-registry:0.0.0.0:5000 --port '8080:80@loadbalancer'
 
 .PHONY: cluster-rm
 cluster-rm: ## Remove a K3D Kubernetes cluster
 	$(info Removing Kubernetes cluster...)
-	k3d cluster delete $(CLUSTER)
+	k3d cluster delete $(CLUSTER) || echo "No clusters found with the name '$(CLUSTER)'"
+
 
 .PHONY: build
 build: ## Build the Docker image
