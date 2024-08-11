@@ -20,7 +20,7 @@ Inventory Service
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Inventory items.
 """
-
+from decimal import Decimal, InvalidOperation
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, reqparse, fields
 from service.models import InventoryItem
@@ -47,6 +47,22 @@ def index():
     return app.send_static_file("index.html")
 
 
+def validate_decimal(value):
+    """
+    Validates that the given value can be converted to a Decimal.
+
+    Args:
+        value: The value to validate.
+
+    Raises:
+        ValueError: If the value cannot be converted to a Decimal.
+    """
+    try:
+        Decimal(value)
+    except InvalidOperation as exc:
+        raise ValueError(f"{value} is not a valid decimal number") from exc
+
+
 # Define the model so that the docs reflect what can be sent
 create_model = api.model(
     "InventoryItem",
@@ -57,7 +73,7 @@ create_model = api.model(
         "quantity": fields.Integer(
             required=True, description="Quantity of inventory item"
         ),
-        "price": fields.Float(required=True, description="Price of the product"),
+        "price": fields.String(required=True, description="Price of the product", validate=validate_decimal),
         "product_id": fields.Integer(required=True, description="ID of the product"),
         "restock_level": fields.Integer(
             required=True, description="Restock level of inventory item"
@@ -219,15 +235,15 @@ class InventoryItemCollection(Resource):
         elif args["name"]:
             app.logger.info("Filtering by name: %s", args["name"])
             items = InventoryItem.find_by_name(args["name"])
-        elif args["item_id"] is not None:
-            app.logger.info("Filtering by id: %s", args["available"])
-            items = InventoryItem.find_by_availability(args["available"])
+        elif args["id"]:
+            app.logger.info("Filtering by id: %s", args["id"])
+            items = InventoryItem.find(args["id"])
         else:
             app.logger.info("Returning unfiltered list.")
             items = InventoryItem.all()
 
-        app.logger.info("[%s] Inventory items returned", len(items))
         results = [item.serialize() for item in items]
+        app.logger.info("[%d] Inventory items returned", len(results))
         return results, status.HTTP_200_OK
 
     # ------------------------------------------------------------------
@@ -250,26 +266,6 @@ class InventoryItemCollection(Resource):
         app.logger.info("Inventory Item with new id [%s] saved!", item.id)
         location_url = api.url_for(InventoryItemResource, item_id=item.id, _external=True)
         return item.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
-
-    # # ------------------------------------------------------------------
-    # # DELETE ALL ITEMS (for testing only)
-    # # ------------------------------------------------------------------
-    # # @api.doc("delete_all_items")
-    # @api.response(204, "All Items deleted")
-    # def delete(self):
-    #     """
-    #     Delete all Item
-
-    #     This endpoint will delete all Item only if the system is under test
-    #     """
-    #     app.logger.info("Request to Delete all items...")
-    #     if "TESTING" in app.config and app.config["TESTING"]:
-    #         InventoryItem.remove_all()
-    #         app.logger.info("Removed all items from the database")
-    #     else:
-    #         app.logger.warning("Request to clear database while system not under test")
-
-    #     return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -306,7 +302,7 @@ class ArchiveResource(Resource):
 ######################################################################
 #  PATH: /inventory/{id}/decrement
 ######################################################################
-@api.route("/inventory/<int:inventory_id>/decrement")
+@api.route("/inventory/<int:item_id>/decrement")
 @api.param("item_id", "The InventoryItem identifier")
 class DecrementResource(Resource):
     """Decrement actions on a Inventory item"""

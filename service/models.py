@@ -112,11 +112,6 @@ class InventoryItem(db.Model):  # pylint: disable=too-many-instance-attributes
             logger.error("Error deleting record: %s", self)
             raise DataValidationError(e) from e
 
-    def remove_all(self):
-        """Removes all documents from the database (use for testing)"""
-        for document in self.database:  # pylint: disable=(not-an-iterable
-            document.delete()
-
     def serialize(self) -> dict:
         """Serializes an InventoryItem into a dictionary"""
 
