@@ -106,7 +106,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/api/inventory/${system_product_id}`,  // Use the system_product_id for the update
+            url: `/api/inventory/${system_product_id}`,
             contentType: "application/json",
             data: JSON.stringify(data)
         });
