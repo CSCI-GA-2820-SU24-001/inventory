@@ -21,6 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Inventory items.
 """
 
+from decimal import Decimal, InvalidOperation
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, reqparse, fields
 from service.models import InventoryItem
@@ -47,6 +48,22 @@ def index():
     return app.send_static_file("index.html")
 
 
+def validate_decimal(value):
+    """
+    Validates that the given value can be converted to a Decimal.
+
+    Args:
+        value: The value to validate.
+
+    Raises:
+        ValueError: If the value cannot be converted to a Decimal.
+    """
+    try:
+        Decimal(value)
+    except InvalidOperation as exc:
+        raise ValueError(f"{value} is not a valid decimal number") from exc
+
+
 # Define the model so that the docs reflect what can be sent
 create_model = api.model(
     "InventoryItem",
@@ -57,7 +74,7 @@ create_model = api.model(
         "quantity": fields.Integer(
             required=True, description="Quantity of inventory item"
         ),
-        "price": fields.Float(required=True, description="Price of the product"),
+        "price": fields.String(required=True, description="Price of the product", validate=validate_decimal),
         "product_id": fields.Integer(required=True, description="ID of the product"),
         "restock_level": fields.Integer(
             required=True, description="Restock level of inventory item"
@@ -120,7 +137,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # RETRIEVE AN ITEM
     # ------------------------------------------------------------------
-    # @api.doc("get_inventory_items")
+    @api.doc("get_inventory_items")
     @api.response(404, "Item not found")
     @api.marshal_with(inventoryItem_model)
     def get(self, item_id):
@@ -142,7 +159,8 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING ITEM
     # ------------------------------------------------------------------
-    # @api.doc("update_inventory_items")
+
+    @api.doc("update_inventory_items")
     @api.response(404, "Item not found")
     @api.response(400, "The posted item data was not valid")
     @api.expect(inventoryItem_model)
@@ -174,7 +192,8 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # DELETE AN ITEM
     # ------------------------------------------------------------------
-    # @api.doc("delete_inventory_items")
+
+    @api.doc("delete_inventory_items")
     @api.response(204, "Item deleted")
     def delete(self, item_id):
 
@@ -205,7 +224,8 @@ class InventoryItemCollection(Resource):
     # ------------------------------------------------------------------
     # LIST ALL ITEMS
     # ------------------------------------------------------------------
-    # @api.doc("list_inventory_items")
+
+    @api.doc("list_inventory_items")
     @api.expect(inventoryItem_args, validate=True)
     @api.marshal_list_with(inventoryItem_model)
     def get(self):
@@ -219,21 +239,22 @@ class InventoryItemCollection(Resource):
         elif args["name"]:
             app.logger.info("Filtering by name: %s", args["name"])
             items = InventoryItem.find_by_name(args["name"])
-        elif args["item_id"] is not None:
-            app.logger.info("Filtering by id: %s", args["available"])
-            items = InventoryItem.find_by_availability(args["available"])
+        elif args["id"]:
+            app.logger.info("Filtering by id: %s", args["id"])
+            items = InventoryItem.find(args["id"])
         else:
             app.logger.info("Returning unfiltered list.")
             items = InventoryItem.all()
 
-        app.logger.info("[%s] Inventory items returned", len(items))
         results = [item.serialize() for item in items]
+        app.logger.info("[%d] Inventory items returned", len(results))
         return results, status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # ADD A NEW ITEM
     # ------------------------------------------------------------------
-    # @api.doc("create_inventory_items")
+
+    @api.doc("create_inventory_items")
     @api.response(400, "The posted data was not valid")
     @api.expect(create_model)
     @api.marshal_with(inventoryItem_model, code=201)
@@ -251,26 +272,6 @@ class InventoryItemCollection(Resource):
         location_url = api.url_for(InventoryItemResource, item_id=item.id, _external=True)
         return item.serialize(), status.HTTP_201_CREATED, {"Location": location_url}
 
-    # # ------------------------------------------------------------------
-    # # DELETE ALL ITEMS (for testing only)
-    # # ------------------------------------------------------------------
-    # # @api.doc("delete_all_items")
-    # @api.response(204, "All Items deleted")
-    # def delete(self):
-    #     """
-    #     Delete all Item
-
-    #     This endpoint will delete all Item only if the system is under test
-    #     """
-    #     app.logger.info("Request to Delete all items...")
-    #     if "TESTING" in app.config and app.config["TESTING"]:
-    #         InventoryItem.remove_all()
-    #         app.logger.info("Removed all items from the database")
-    #     else:
-    #         app.logger.warning("Request to clear database while system not under test")
-
-    #     return "", status.HTTP_204_NO_CONTENT
-
 
 ######################################################################
 #  PATH: /inventory/{id}/archive
@@ -280,7 +281,7 @@ class InventoryItemCollection(Resource):
 class ArchiveResource(Resource):
     """Archive action on a item"""
 
-    # @api.doc("archive_items")
+    @api.doc("archive_items")
     @api.response(404, "Item not found")
     @api.response(409, "The Item is not available to archive")
     def put(self, item_id):
@@ -306,12 +307,13 @@ class ArchiveResource(Resource):
 ######################################################################
 #  PATH: /inventory/{id}/decrement
 ######################################################################
-@api.route("/inventory/<int:inventory_id>/decrement")
+
+@api.route("/inventory/<int:item_id>/decrement")
 @api.param("item_id", "The InventoryItem identifier")
 class DecrementResource(Resource):
     """Decrement actions on a Inventory item"""
 
-    # @api.doc("decrement_items")
+    @api.doc("decrement_items")
     @api.response(404, "Item not found")
     @api.response(409, "The item is not there to decrement")
     def put(self, item_id):

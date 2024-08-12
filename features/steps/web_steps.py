@@ -213,7 +213,7 @@ def step_impl(context, message):
 
 
 @then(
-    'I should see the specific error message "400 Bad Request: Item is already archived"'
+    'I should see the specific error message "Item is already archived."'
 )
 def step_impl(context):
     try:
@@ -222,7 +222,7 @@ def step_impl(context):
             EC.visibility_of_element_located((By.ID, "flash_message"))
         )
         actual_message = found.text.strip()
-        expected_message = "400 Bad Request: Item is already archived"
+        expected_message = "Item is already archived."
         print(f"Actual message found: '{actual_message}'")  # Debugging statement
         assert (
             expected_message in actual_message
@@ -418,7 +418,7 @@ def step_impl(context):
     item_id = context.captured_id
     assert item_id, "No captured ID found to delete."
 
-    rest_endpoint = f"{context.base_url}/inventory/{item_id}"
+    rest_endpoint = f"{context.base_url}/api/inventory/{item_id}"
     context.resp = requests.delete(rest_endpoint, timeout=WAIT_TIMEOUT)
     assert (
         context.resp.status_code == HTTP_204_NO_CONTENT

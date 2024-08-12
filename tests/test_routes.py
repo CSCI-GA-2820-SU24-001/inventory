@@ -3,10 +3,13 @@ TestInventoryItem API Service Test Suite
 """
 
 import os
-from urllib.parse import quote_plus
 import logging
 from decimal import Decimal
+from urllib.parse import quote_plus
+
 from service.common import status
+from service.routes import validate_decimal
+
 from tests.test_base import BaseTestCase
 from .factories import InventoryItemFactory
 
@@ -47,6 +50,32 @@ class TestInventoryItemService(BaseTestCase):
     ######################################################################
     #  T E S T   C A S E S
     ######################################################################
+
+    def test_health_check(self):
+        """It should return 200 OK with the correct JSON response"""
+        response = self.client.get("/health")
+        # Assert that the status code is 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Assert that the response JSON is {"status": "OK"}
+        self.assertEqual(response.json, {"status": "OK"})
+
+    def test_valid_decimal(self):
+        """It should pass for valid decimal strings"""
+        try:
+            validate_decimal("123.45")
+            validate_decimal("0.001")
+            validate_decimal("-123.45")
+        except ValueError:
+            self.fail("validate_decimal() raised ValueError unexpectedly!")
+
+    def test_invalid_decimal(self):
+        """It should raise ValueError for invalid decimal strings"""
+        with self.assertRaises(ValueError):
+            validate_decimal("abc")
+        with self.assertRaises(ValueError):
+            validate_decimal("123.45.67")
+        with self.assertRaises(ValueError):
+            validate_decimal("")
 
     # ----------------------------------------------------------
     # TEST CREATE
@@ -90,13 +119,13 @@ class TestInventoryItemService(BaseTestCase):
 
     def test_create_inventory_item_no_data(self):
         """It should not Create an Inventory Item with no data"""
-        resp = self.client.post("/inventory", json={}, content_type="application/json")
+        resp = self.client.post("/api/inventory", json={}, content_type="application/json")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_inventory_item_bad_data(self):
         """It should not Create an Inventory Item with bad data"""
         resp = self.client.post(
-            "/inventory",
+            "/api/inventory",
             json={"name": "Widget", "quantity": "one hundred"},
             content_type="application/json",
         )
@@ -203,6 +232,20 @@ class TestInventoryItemService(BaseTestCase):
         # Check the response data
         data = response.get_json()
         self.assertEqual(data["quantity"], 0)
+
+    def test_item_not_found(self):
+        """It should return 404 Not Found when the item does not exist"""
+        non_existent_id = 99999  # Assuming this ID does not exist in your test database
+
+        # Simulate the PUT request to decrement an item that does not exist
+        response = self.client.put(f"/api/inventory/{non_existent_id}/decrement")
+
+        # Assert that the response status code is 404 Not Found
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Optionally, check the error message returned
+        expected_message = f"Item with id '{non_existent_id}' was not found."
+        self.assertIn(expected_message, response.json['message'])
 
     # ----------------------------------------------------------
     # TEST ARCHIVE ITEM (new action endpoint)
@@ -335,3 +378,9 @@ class TestSadPaths(BaseTestCase):
         test_item.condition = 69
         response = self.client.post(BASE_URL, json=test_item.serialize())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_item_not_found(self):
+        """It should return 404 Not Found when the item does not exist"""
+        non_existent_id = 9999  # Assuming this ID does not exist in test database
+        response = self.client.get(f"{BASE_URL}/{non_existent_id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
