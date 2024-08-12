@@ -1,5 +1,6 @@
 # These can be overidden with env vars.
-CLUSTER ?= nyu-devops
+# Default cluster name
+CLUSTER ?= k3s-default
 
 .SILENT:
 
@@ -36,7 +37,7 @@ lint: ## Run the linter
 	flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
 	pylint service tests --max-line-length=127
 
-.PHONY: tests
+.PHONY: test
 test: ## Run the unit tests
 	$(info Running tests...)
 	pytest --pspec --cov=service --cov-fail-under=95
@@ -46,19 +47,45 @@ test: ## Run the unit tests
 .PHONY: run
 run: ## Run the service
 	$(info Starting service...)
-	honcho start -p 8081
+	honcho start -p 8080
 
 .PHONY: cluster
 cluster: ## Create a K3D Kubernetes cluster with load balancer and registry
 	$(info Creating Kubernetes cluster with a registry and 1 node...)
-	k3d cluster create --agents 1 --registry-create cluster-registry:0.0.0.0:5000 --port '8080:80@loadbalancer'
+	k3d cluster create $(CLUSTER) --agents 1 --registry-create cluster-registry:0.0.0.0:5000 --port '8080:80@loadbalancer'
 
 .PHONY: cluster-rm
 cluster-rm: ## Remove a K3D Kubernetes cluster
 	$(info Removing Kubernetes cluster...)
-	k3d cluster delete
+	k3d cluster delete $(CLUSTER) || echo "No clusters found with the name '$(CLUSTER)'"
+
+
+.PHONY: build
+build: ## Build the Docker image
+	$(info Building the Docker image...)
+	docker build -t inventory:latest .
+
+.PHONY: tag
+tag: ## Create a tag for the Docker image
+	$(info Tagging the Docker image...)
+	docker tag inventory:latest cluster-registry:5000/inventory:latest
+
+.PHONY: push
+push: ## Push the Docker image to the cluster registry
+	$(info Pushing the Docker image...)
+	docker push cluster-registry:5000/inventory:latest
 
 .PHONY: deploy
-depoy: ## Deploy the service on local Kubernetes
+deploy: ## Deploy the service on local Kubernetes
 	$(info Deploying service locally...)
 	kubectl apply -f k8s/
+
+.PHONY: kc-get
+kc-get: ## Get all Kubernetes resources
+	$(info Getting all Kubernetes resources...)
+	kubectl get all
+
+.PHONY: kc-list
+kc-list: ## List all K3D clusters
+	$(info Listing all K3D clusters...)
+	k3d cluster list

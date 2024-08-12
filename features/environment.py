@@ -31,6 +31,8 @@ def after_all(context):
 ######################################################################
 # Utility functions to create web drivers
 ######################################################################
+
+
 def get_chrome():
     """Creates a headless Chrome driver"""
     options = webdriver.ChromeOptions()
