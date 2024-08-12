@@ -48,7 +48,6 @@ def index():
     return app.send_static_file("index.html")
 
 
-
 def validate_decimal(value):
     """
     Validates that the given value can be converted to a Decimal.
@@ -63,7 +62,6 @@ def validate_decimal(value):
         Decimal(value)
     except InvalidOperation as exc:
         raise ValueError(f"{value} is not a valid decimal number") from exc
-
 
 
 # Define the model so that the docs reflect what can be sent
@@ -283,7 +281,6 @@ class InventoryItemCollection(Resource):
 class ArchiveResource(Resource):
     """Archive action on a item"""
 
-
     @api.doc("archive_items")
     @api.response(404, "Item not found")
     @api.response(409, "The Item is not available to archive")
@@ -315,7 +312,6 @@ class ArchiveResource(Resource):
 @api.param("item_id", "The InventoryItem identifier")
 class DecrementResource(Resource):
     """Decrement actions on a Inventory item"""
-
 
     @api.doc("decrement_items")
     @api.response(404, "Item not found")
