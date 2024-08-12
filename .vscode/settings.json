@@ -2,6 +2,11 @@
     "cSpell.words": [
         "sqlalchemy",
         "psycopg",
-        "testdb"
+        "testdb",
+        "gunicorn",
+        "apidocs",
+        "codecov",
+        "restx",
+        "Rofrano" 
     ]
 }
