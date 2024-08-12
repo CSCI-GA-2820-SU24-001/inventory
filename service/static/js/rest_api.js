@@ -6,7 +6,7 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
-        $("#product_id").val(res.id);
+        $("#system_product_id").val(res.id);
         $("#product_name").val(res.name);
         $("#product_description").val(res.description);
         $("#product_quantity").val(res.quantity);
@@ -18,6 +18,7 @@ $(function () {
 
     // Clears all form fields
     function clear_form_data() {
+        $("#system_product_id").val("");
         $("#product_name").val("");
         $("#product_description").val("");
         $("#product_quantity").val("");
@@ -82,11 +83,12 @@ $(function () {
 
     $("#update-btn").click(function () {
 
+        let system_product_id = $("#system_product_id").val();  // Use the system_product_id displayed in the form
         let name = $("#product_name").val();
         let description = $("#product_description").val();
         let quantity = parseInt($("#product_quantity").val(), 10);
         let price = parseFloat($("#product_price").val());
-        let product_id = parseInt($("#product_product_id").val(), 10);
+        let product_internal_id = parseInt($("#product_product_id").val(), 10);
         let restock_level = parseInt($("#product_restock_level").val(), 10);
         let condition = $("#product_condition").val();
 
@@ -95,7 +97,7 @@ $(function () {
             "description": description,
             "quantity": quantity,
             "price": price,
-            "product_id": product_id,
+            "product_id": product_internal_id,
             "restock_level": restock_level,
             "condition": condition
         };
@@ -104,21 +106,22 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/api/inventory/${product_id}`,
+            url: `/api/inventory/${system_product_id}`,
             contentType: "application/json",
             data: JSON.stringify(data)
-        })
+        });
 
         ajax.done(function (res) {
-            update_form_data(res)
-            flash_message("Success")
+            update_form_data(res);
+            flash_message("Success");
         });
 
         ajax.fail(function (res) {
-            flash_message(res.responseJSON.message)
+            flash_message(res.responseJSON.message);
         });
-
     });
+
+
 
 
     // ****************************************
@@ -126,26 +129,25 @@ $(function () {
     // ****************************************
     $("#retrieve-btn").click(function () {
 
-        let product_id = $("#product_id").val();
-      
+        let system_product_id = $("#system_product_id").val();  // Use the system-generated ID instead of product_id
+
         $("#flash_message").empty();
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/api/inventory/${product_id}`,
+            url: `/api/inventory/${system_product_id}`,  // Use the system-generated ID in the URL
             contentType: "application/json",
             data: ''
-        })
+        });
 
         ajax.done(function (res) {
-            //alert(res.toSource())
-            update_form_data(res)
-            flash_message("Success")
+            update_form_data(res);  // Populate the form with the retrieved data
+            flash_message("Success");
         });
 
         ajax.fail(function (res) {
-            clear_form_data()
-            flash_message(res.responseJSON.message)
+            clear_form_data();  // Clear the form if the retrieve operation fails
+            flash_message(res.responseJSON.message);
         });
 
     });
@@ -222,23 +224,27 @@ $(function () {
                 flash_message("No items found");
                 return;
             }
+
             let table = '<table class="table table-bordered"><thead><tr>';
             table += '<th>ID</th><th>Name</th><th>Description</th><th>Quantity</th><th>Price</th><th>Product ID</th><th>Restock Level</th><th>Condition</th>';
             table += '</tr></thead><tbody>';
-            let firstItem = "";
+
+            let matchedItem = null;
             for (let i = 0; i < res.length; i++) {
                 let item = res[i];
                 table += `<tr id="row_${item.id}"><td>${item.id}</td><td>${item.name}</td><td>${item.description}</td><td>${item.quantity}</td><td>${item.price}</td><td>${item.product_id}</td><td>${item.restock_level}</td><td>${item.condition}</td></tr>`;
-                if (i == 0) {
-                    firstItem = item;
+                if (item.name === name) {
+                    matchedItem = item;
                 }
             }
             table += '</tbody></table>';
             $("#search_results").append(table);
 
-            // Automatically fill in the form with the first result
-            if (firstItem != "") {
-                update_form_data(firstItem);
+            // Automatically fill in the form with the matched item
+            if (matchedItem) {
+                update_form_data(matchedItem);
+            } else {
+                flash_message("No exact match found for the search criteria");
             }
 
             flash_message("Success");
@@ -248,6 +254,7 @@ $(function () {
             flash_message(res.responseJSON.message);
         });
     });
+
 
     // ****************************************
     // Decrement a Product's Quantity
@@ -281,7 +288,9 @@ $(function () {
     // ****************************************
     $("#archive-btn").click(function () {
 
-        let inventory_id = $("#product_id").val();
+        let inventory_id = $("#system_product_id").val();
+        console.log("Archiving item with ID:", inventory_id);
+
 
         $("#flash_message").empty();
 
