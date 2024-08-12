@@ -8,6 +8,8 @@
         "codecov",
         "restx",
         "Rofrano",
-        "reqparse" 
+        "reqparse",
+        "jsonschema",
+        "werkzeug"         
     ]
 }
