@@ -235,7 +235,7 @@ class TestInventoryItemService(BaseTestCase):
 
     def test_item_not_found(self):
         """It should return 404 Not Found when the item does not exist"""
-        non_existent_id = 99999  # Assuming this ID does not exist in your test database
+        non_existent_id = 9999  # Assuming this ID does not exist in test database
 
         # Simulate the PUT request to decrement an item that does not exist
         response = self.client.put(f"/api/inventory/{non_existent_id}/decrement")
