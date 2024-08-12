@@ -109,7 +109,7 @@ Feature: Inventory Management
     And I should not see "NEW" in the results
     When I set the "system_product_id" to the captured ID for "laptop"
     And I press the "Archive" button
-    Then I should see the specific error message "400 Bad Request: Item is already archived"
+    Then I should see the specific error message "Item is already archived."
 
   Scenario: Update an inventory item
     Given the following items exist
