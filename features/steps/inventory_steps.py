@@ -22,7 +22,7 @@ WAIT_TIMEOUT = 60
 @given("the following items exist")
 def step_impl(context):
     """Ensure the specified items exist in the inventory"""
-    rest_endpoint = f"{context.base_url}/inventory"
+    rest_endpoint = f"{context.base_url}/api/inventory"
 
     # Create the items listed in the table
     for row in context.table:
@@ -50,7 +50,7 @@ def step_impl(context):
 @given("I have access to the inventory service")
 def step_impl(context):
     """Check access to the inventory service"""
-    rest_endpoint = f"{context.base_url}/inventory"
+    rest_endpoint = f"{context.base_url}/api/inventory"
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
     assert context.resp.status_code == HTTP_200_OK
 
@@ -58,7 +58,7 @@ def step_impl(context):
 @when('I add a new item with name "{item_name}"')
 def step_impl(context, item_name):
     """Add a new item to the inventory"""
-    rest_endpoint = f"{context.base_url}/inventory"
+    rest_endpoint = f"{context.base_url}/api/inventory"
     payload = {
         "name": item_name,
         "description": "A new item",
@@ -75,7 +75,7 @@ def step_impl(context, item_name):
 @then("I should see the item in the inventory list")
 def step_impl(context):
     """Check if the item is in the inventory list"""
-    rest_endpoint = f"{context.base_url}/inventory"
+    rest_endpoint = f"{context.base_url}/api/inventory"
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
     assert context.resp.status_code == HTTP_200_OK
     items = context.resp.json()
@@ -86,7 +86,7 @@ def step_impl(context):
 @given("the following inventories exist")
 def step_impl(context):
     """Ensure the specified inventories exist"""
-    rest_endpoint = f"{context.base_url}/inventory"
+    rest_endpoint = f"{context.base_url}/api/inventory"
     for row in context.table:
         payload = {
             "name": row["name"],

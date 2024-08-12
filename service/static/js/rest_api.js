@@ -106,7 +106,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/${system_product_id}`,  // Use the system_product_id for the update
+            url: `/api/inventory/${system_product_id}`,  // Use the system_product_id for the update
             contentType: "application/json",
             data: JSON.stringify(data)
         });
@@ -135,7 +135,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory/${system_product_id}`,  // Use the system-generated ID in the URL
+            url: `/api/inventory/${system_product_id}`,  // Use the system-generated ID in the URL
             contentType: "application/json",
             data: ''
         });
