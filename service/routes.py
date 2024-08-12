@@ -20,6 +20,7 @@ Inventory Service
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Inventory items.
 """
+
 from decimal import Decimal, InvalidOperation
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, reqparse, fields
@@ -47,6 +48,7 @@ def index():
     return app.send_static_file("index.html")
 
 
+
 def validate_decimal(value):
     """
     Validates that the given value can be converted to a Decimal.
@@ -61,6 +63,7 @@ def validate_decimal(value):
         Decimal(value)
     except InvalidOperation as exc:
         raise ValueError(f"{value} is not a valid decimal number") from exc
+
 
 
 # Define the model so that the docs reflect what can be sent
@@ -158,6 +161,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING ITEM
     # ------------------------------------------------------------------
+
     @api.doc("update_inventory_items")
     @api.response(404, "Item not found")
     @api.response(400, "The posted item data was not valid")
@@ -190,6 +194,7 @@ class InventoryItemResource(Resource):
     # ------------------------------------------------------------------
     # DELETE AN ITEM
     # ------------------------------------------------------------------
+
     @api.doc("delete_inventory_items")
     @api.response(204, "Item deleted")
     def delete(self, item_id):
@@ -221,6 +226,7 @@ class InventoryItemCollection(Resource):
     # ------------------------------------------------------------------
     # LIST ALL ITEMS
     # ------------------------------------------------------------------
+
     @api.doc("list_inventory_items")
     @api.expect(inventoryItem_args, validate=True)
     @api.marshal_list_with(inventoryItem_model)
@@ -249,6 +255,7 @@ class InventoryItemCollection(Resource):
     # ------------------------------------------------------------------
     # ADD A NEW ITEM
     # ------------------------------------------------------------------
+
     @api.doc("create_inventory_items")
     @api.response(400, "The posted data was not valid")
     @api.expect(create_model)
@@ -276,6 +283,7 @@ class InventoryItemCollection(Resource):
 class ArchiveResource(Resource):
     """Archive action on a item"""
 
+
     @api.doc("archive_items")
     @api.response(404, "Item not found")
     @api.response(409, "The Item is not available to archive")
@@ -302,10 +310,12 @@ class ArchiveResource(Resource):
 ######################################################################
 #  PATH: /inventory/{id}/decrement
 ######################################################################
+
 @api.route("/inventory/<int:item_id>/decrement")
 @api.param("item_id", "The InventoryItem identifier")
 class DecrementResource(Resource):
     """Decrement actions on a Inventory item"""
+
 
     @api.doc("decrement_items")
     @api.response(404, "Item not found")
