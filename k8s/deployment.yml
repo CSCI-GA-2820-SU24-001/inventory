@@ -5,12 +5,12 @@ metadata:
   labels:
     app: inventory
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 0%
-      maxUnavailable: 50%
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: inventory
@@ -22,7 +22,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: inventory
-          image: cluster-registry:5000/inventory:1.0
+          image: cluster-registry:5000/inventory:latest
+          # image: inventory
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
