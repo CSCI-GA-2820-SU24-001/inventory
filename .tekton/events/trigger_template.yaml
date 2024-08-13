@@ -1,7 +1,10 @@
 apiVersion: triggers.tekton.dev/v1beta1
+
 kind: TriggerTemplate
+
 metadata:
   name: cd-template
+  
 spec:
   params:
     - name: git-repo-url
