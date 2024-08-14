@@ -131,6 +131,11 @@ $(function () {
 
         let system_product_id = $("#system_product_id").val();  // Use the system-generated ID instead of product_id
 
+        // Ensure ID is provided
+        if (!system_product_id) {
+            flash_message("Please enter an Inventory ID");
+            return;
+        }
         $("#flash_message").empty();
 
         let ajax = $.ajax({
