@@ -30,22 +30,44 @@ The project contains the following:
 
 ```text
 .gitignore          - this will ignore vagrant and other metadata files
-.flaskenv           - Environment variables to configure Flask
 .gitattributes      - File to gix Windows CRLF issues
-.devcontainers/     - Folder with support for VSCode Remote Containers
-dot-env-example     - copy to .env to use environment variables
-pyproject.toml      - Poetry list of Python libraries required by your code
 
-service/                   - service python package
-├── __init__.py            - package initializer
-├── config.py              - configuration parameters
-├── models.py              - module with business models
-├── routes.py              - module with service routes
-└── common                 - common code package
-    ├── cli_commands.py    - Flask command to recreate all tables
-    ├── error_handlers.py  - HTTP error handling code
-    ├── log_handlers.py    - logging setup code
-    └── status.py          - HTTP status constants
+.devcontainers/     - Folder with support for VSCode Remote Containers
+.tekton/            - Tekton CI/CD pipeline files
+k8s/                - Kubernetes deployment files
+Dockerfile          - Docker configuration file
+
+dot-env-example     - copy to .env to use environment variables
+.flaskenv           - Environment variables to configure Flask
+pyproject.toml      - Poetry list of Python libraries required
+wsgi.py             - WSGI entry point for the application
+
+service/                        - service python package
+├── __init__.py                 - package initializer
+├── config.py                   - configuration parameters
+├── routes.py                   - module with service routes
+├── common                      - common code package
+│   ├── cli_commands.py         - Flask command to recreate all 
+│   ├── error_handlers.py       - HTTP error handling code
+│   ├── log_handlers.py         - logging setup code
+│   └── status.py               - HTTP status constants
+│── models.py                   - models package
+│               
+└── static                      - static files package
+    ├── css                     - CSS files
+    ├── images                  - Image files
+    ├── js                      - JavaScript files
+        ├── bootstrap.min.js    - Bootstrap library for 
+        ├── jquery-3.6.0.min.js - jQuery library for simplified 
+        └── rest_api.js         - JavaScript file for interacting 
+    └── index.html              - Main HTML file for the web
+
+features/                  - BDD features package
+├── steps                  - step definitions for BDD
+│   ├── inventory_steps.py  - BDD steps for inventory
+│   ├── web_steps.py       - BDD steps for web interactions
+├── environment.py         - BDD environment setup
+└── inventory.feature       - BDD feature file
 
 tests/                     - test cases package
 ├── __init__.py            - package initializer
@@ -61,13 +83,13 @@ The inventory service provides the following API endpoints:
 
 | Operation                    | Method | URL                           |
 |------------------------------|--------|-------------------------------|
-| **Health check**             | GET    | `/health`                     |
-| **Root URL**                 | GET    | `/`                           |
-| **List all inventory items** | GET    | `/inventory`                  |
-| **Create an inventory item** | POST   | `/inventory`                  |
-| **Read an inventory item**   | GET    | `/inventory/{id}`             |
-| **Update an inventory item** | PUT    | `/inventory/{id}`             |
-| **Delete an inventory item** | DELETE | `/inventory/{id}`             |
+| **Health check**             | GET    | `/api/health`                 |
+| **Root URL**                 | GET    | `/api/`                       |
+| **List all inventory items** | GET    | `/api/inventory`              |
+| **Create an inventory item** | POST   | `/api/inventory`              |
+| **Read an inventory item**   | GET    | `/api/inventory/{id}`         |
+| **Update an inventory item** | PUT    | `/api/inventory/{id}`         |
+| **Delete an inventory item** | DELETE | `/api/inventory/{id}`         |
 
 ## Running the Tests
 
@@ -82,18 +104,10 @@ make test
 To run the inventory service locally, you can use the following command:
 
 ```bash
-flask run
+honcho start
 ```
 
 The service will start and be accessible at http://localhost:8000. To change the port, update the environment variable in the .flaskenv file.
-
-## License
-
-Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
-
-Licensed under the Apache License. See [LICENSE](LICENSE)
-
-This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
 
 ## Kubernetes Cluster
 
@@ -143,17 +157,6 @@ This section provides instructions on how to manage your Kubernetes cluster and 
   ```
   This command pushes the Docker image tagged as `cluster-registry:5000/inventory:latest` to the cluster registry.
 
-if we get this error 
-
-vscode@nyu:/app$ make push
-Pushing the Docker image...
-The push refers to repository [cluster-registry:5000/inventory]
-Get "https://cluster-registry:5000/v2/": dial tcp: lookup cluster-registry on 127.0.0.11:53: no such host
-make: *** [Makefile:76: push] Error 1
-
-use the below command on the terminal to fix issue :
-sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
-
 - **Deploy the Service to Kubernetes:**
   To deploy your service to the local Kubernetes cluster, run:
   ```sh
@@ -202,3 +205,19 @@ sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
    ```
 
 These steps will help you manage your Kubernetes cluster and deploy your application seamlessly.
+
+
+## Open Shift Deployment
+
+The inventory service is also deployed using an OpenShift pipeline. The deployed application can be accessed at the following URL:
+
+https://inventory-rc5501-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/
+
+## License
+
+Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
+
+Licensed under the Apache License. See [LICENSE](LICENSE)
+
+This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
+
