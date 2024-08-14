@@ -142,6 +142,17 @@ This section provides instructions on how to manage your Kubernetes cluster and 
   ```
   This command pushes the Docker image tagged as `cluster-registry:5000/inventory:latest` to the cluster registry.
 
+if we get this error 
+
+vscode@nyu:/app$ make push
+Pushing the Docker image...
+The push refers to repository [cluster-registry:5000/inventory]
+Get "https://cluster-registry:5000/v2/": dial tcp: lookup cluster-registry on 127.0.0.11:53: no such host
+make: *** [Makefile:76: push] Error 1
+
+use the below command on the terminal to fix issue :
+sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
+
 - **Deploy the Service to Kubernetes:**
   To deploy your service to the local Kubernetes cluster, run:
   ```sh
