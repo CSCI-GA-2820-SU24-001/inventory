@@ -94,7 +94,7 @@ inventoryItem_model = api.inherit(
             readOnly=True, description="The unique id assigned internally by service"
         ),
         "product_id": fields.Integer(
-            readOnly=True, description="The unique product id assigned internally by service"
+            readOnly=True, description="Product id "
         ),
     },
 )

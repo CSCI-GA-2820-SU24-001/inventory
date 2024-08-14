@@ -158,7 +158,7 @@ $(function () {
 
     $("#delete-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = $("#system_product_id").val();
 
         $("#flash_message").empty();
 
@@ -262,7 +262,7 @@ $(function () {
 
     $("#decrement-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = $("#system_product_id").val();
 
         $("#flash_message").empty();
 
