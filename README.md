@@ -215,6 +215,8 @@ These steps will help you manage your Kubernetes cluster and deploy your applica
 
 The inventory service is also deployed using an OpenShift pipeline. The deployed application can be accessed at the following URL:
 
+https://inventory-rc5501-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/
+
 ## License
 
 Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
