@@ -10,6 +10,7 @@
 
 The Inventory Service is designed to manage the collection of inventory items for a business. This service allows users to perform CRUD (Create, Read, Update, Delete) operations on inventory items through a RESTful API. Each inventory item includes various attributes such as name, description, quantity, price, product_id, restock_level, and condition.
 
+
 This project is structured to follow best practices in software development, including unit testing and adherence to PEP8 coding standards. It utilizes Flask as the web framework, SQLAlchemy for ORM (Object Relational Mapping), and PostgreSQL as the database.
 
 The service is built to support seamless integration and deployment in a containerized environment using Docker, with a focus on maintainability, scalability, and ease of use.
@@ -211,6 +212,7 @@ sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
 
 These steps will help you manage your Kubernetes cluster and deploy your application seamlessly.
 
+
 ## Open Shift Deployment
 
 The inventory service is also deployed using an OpenShift pipeline. The deployed application can be accessed at the following URL:
@@ -224,3 +226,4 @@ Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/
 Licensed under the Apache License. See [LICENSE](LICENSE)
 
 This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
+
