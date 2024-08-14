@@ -42,8 +42,6 @@ dot-env-example     - copy to .env to use environment variables
 pyproject.toml      - Poetry list of Python libraries required
 wsgi.py             - WSGI entry point for the application
 
-thunder/            - Thunder Client collection for testing APIs
-
 service/                        - service python package
 ├── __init__.py                 - package initializer
 ├── config.py                   - configuration parameters
@@ -78,13 +76,13 @@ The inventory service provides the following API endpoints:
 
 | Operation                    | Method | URL                           |
 |------------------------------|--------|-------------------------------|
-| **Health check**             | GET    | `/health`                     |
-| **Root URL**                 | GET    | `/`                           |
-| **List all inventory items** | GET    | `/inventory`                  |
-| **Create an inventory item** | POST   | `/inventory`                  |
-| **Read an inventory item**   | GET    | `/inventory/{id}`             |
-| **Update an inventory item** | PUT    | `/inventory/{id}`             |
-| **Delete an inventory item** | DELETE | `/inventory/{id}`             |
+| **Health check**             | GET    | `/api/health`                 |
+| **Root URL**                 | GET    | `/api/`                       |
+| **List all inventory items** | GET    | `/api/inventory`              |
+| **Create an inventory item** | POST   | `/api/inventory`              |
+| **Read an inventory item**   | GET    | `/api/inventory/{id}`         |
+| **Update an inventory item** | PUT    | `/api/inventory/{id}`         |
+| **Delete an inventory item** | DELETE | `/api/inventory/{id}`         |
 
 ## Running the Tests
 
@@ -151,17 +149,6 @@ This section provides instructions on how to manage your Kubernetes cluster and 
   make push
   ```
   This command pushes the Docker image tagged as `cluster-registry:5000/inventory:latest` to the cluster registry.
-
-if we get this error 
-
-vscode@nyu:/app$ make push
-Pushing the Docker image...
-The push refers to repository [cluster-registry:5000/inventory]
-Get "https://cluster-registry:5000/v2/": dial tcp: lookup cluster-registry on 127.0.0.11:53: no such host
-make: *** [Makefile:76: push] Error 1
-
-use the below command on the terminal to fix issue :
-sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
 
 - **Deploy the Service to Kubernetes:**
   To deploy your service to the local Kubernetes cluster, run:
