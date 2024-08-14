@@ -29,22 +29,39 @@ The project contains the following:
 
 ```text
 .gitignore          - this will ignore vagrant and other metadata files
-.flaskenv           - Environment variables to configure Flask
 .gitattributes      - File to gix Windows CRLF issues
-.devcontainers/     - Folder with support for VSCode Remote Containers
-dot-env-example     - copy to .env to use environment variables
-pyproject.toml      - Poetry list of Python libraries required by your code
 
-service/                   - service python package
-├── __init__.py            - package initializer
-├── config.py              - configuration parameters
-├── models.py              - module with business models
-├── routes.py              - module with service routes
-└── common                 - common code package
-    ├── cli_commands.py    - Flask command to recreate all tables
-    ├── error_handlers.py  - HTTP error handling code
-    ├── log_handlers.py    - logging setup code
-    └── status.py          - HTTP status constants
+.devcontainers/     - Folder with support for VSCode Remote Containers
+.tekton/            - Tekton CI/CD pipeline files
+k8s/                - Kubernetes deployment files
+Dockerfile          - Docker configuration file
+
+dot-env-example     - copy to .env to use environment variables
+.flaskenv           - Environment variables to configure Flask
+pyproject.toml      - Poetry list of Python libraries required
+wsgi.py             - WSGI entry point for the application
+
+thunder/            - Thunder Client collection for testing APIs
+
+service/                        - service python package
+├── __init__.py                 - package initializer
+├── config.py                   - configuration parameters
+├── routes.py                   - module with service routes
+├── common                      - common code package
+│   ├── cli_commands.py         - Flask command to recreate all 
+│   ├── error_handlers.py       - HTTP error handling code
+│   ├── log_handlers.py         - logging setup code
+│   └── status.py               - HTTP status constants
+│── models.py                   - models package
+│               
+└── static                      - static files package
+    ├── css                     - CSS files
+    ├── images                  - Image files
+    ├── js                      - JavaScript files
+        ├── bootstrap.min.js    - Bootstrap library for 
+        ├── jquery-3.6.0.min.js - jQuery library for simplified 
+        └── rest_api.js         - JavaScript file for interacting 
+    └── index.html              - Main HTML file for the web 
 
 tests/                     - test cases package
 ├── __init__.py            - package initializer
@@ -81,18 +98,10 @@ make test
 To run the inventory service locally, you can use the following command:
 
 ```bash
-flask run
+honcho start
 ```
 
 The service will start and be accessible at http://localhost:8000. To change the port, update the environment variable in the .flaskenv file.
-
-## License
-
-Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
-
-Licensed under the Apache License. See [LICENSE](LICENSE)
-
-This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
 
 ## Kubernetes Cluster
 
@@ -201,3 +210,15 @@ sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
    ```
 
 These steps will help you manage your Kubernetes cluster and deploy your application seamlessly.
+
+## Open Shift Deployment
+
+The inventory service is also deployed using an OpenShift pipeline. The deployed application can be accessed at the following URL:
+
+## License
+
+Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.
+
+Licensed under the Apache License. See [LICENSE](LICENSE)
+
+This repository is part of the New York University (NYU) masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by [John Rofrano](https://cs.nyu.edu/~rofrano/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
