@@ -10,6 +10,7 @@
 
 The Inventory Service is designed to manage the collection of inventory items for a business. This service allows users to perform CRUD (Create, Read, Update, Delete) operations on inventory items through a RESTful API. Each inventory item includes various attributes such as name, description, quantity, price, product_id, restock_level, and condition.
 
+
 This project is structured to follow best practices in software development, including unit testing and adherence to PEP8 coding standards. It utilizes Flask as the web framework, SQLAlchemy for ORM (Object Relational Mapping), and PostgreSQL as the database.
 
 The service is built to support seamless integration and deployment in a containerized environment using Docker, with a focus on maintainability, scalability, and ease of use.
