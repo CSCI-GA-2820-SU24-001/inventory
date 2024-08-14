@@ -60,7 +60,14 @@ service/                        - service python package
         ├── bootstrap.min.js    - Bootstrap library for 
         ├── jquery-3.6.0.min.js - jQuery library for simplified 
         └── rest_api.js         - JavaScript file for interacting 
-    └── index.html              - Main HTML file for the web 
+    └── index.html              - Main HTML file for the web
+
+features/                  - BDD features package
+├── steps                  - step definitions for BDD
+│   ├── inventory_steps.py  - BDD steps for inventory
+│   ├── web_steps.py       - BDD steps for web interactions
+├── environment.py         - BDD environment setup
+└── inventory.feature       - BDD feature file
 
 tests/                     - test cases package
 ├── __init__.py            - package initializer
